@@ -1,0 +1,74 @@
+stages:
+  - build
+  - deploy
+
+variables:
+  CI_REGISTRY: "registry.gitlab.com"
+  CI_REGISTRY_IMAGE: "${CI_REGISTRY}/${CI_PROJECT_PATH}"
+  DOCKER_TLS_CERTDIR: ""
+  DOCKER_DRIVER: overlay2
+  GIT_STRATEGY: clone
+
+
+.pre:
+  stage: prepare
+  tags:
+    - auc
+  image: alpine:latest
+  script:
+    - apk add --no-cache protobuf protobuf-dev
+    - mkdir -p /kaniko/.docker
+    - echo "{\"auths\":{\"${CI_REGISTRY}\":{\"auth\":\"$(echo -n gitlab-ci-token:${CI_JOB_TOKEN} | base64 | tr -d '\n')\"}}}" > /kaniko/.docker/config.json
+    - echo "127.0.0.1 docker" > /etc/hosts
+  artifacts:
+    paths:
+      - /kaniko/.docker/config.json
+    expire_in: 1 hour
+
+build:
+  stage: build
+  tags:
+    - auc
+  image:
+    name: gcr.io/kaniko-project/executor:debug
+    entrypoint: [ "" ]
+  variables:
+    DOCKER_CONFIG: "/kaniko/.docker"
+    GODEBUG: "http2client=0"
+  script:
+    - /kaniko/executor
+      --context "${CI_PROJECT_DIR}"
+      --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
+      --destination "${CI_REGISTRY_IMAGE}:latest"
+      --cache=true
+      --cache-repo "${CI_REGISTRY_IMAGE}/cache"
+deploy:
+  tags:
+    - deploy
+  stage: deploy
+  script:
+    - 'command -v ssh-agent >/dev/null || ( apt-get update -y && apt-get install openssh-client -y )'
+    - eval $(ssh-agent -s)
+    - echo "${SSH_PRIVATE_KEY}" | tr -d '\r' | ssh-add -
+    - mkdir -p ~/.ssh
+    - chmod 600 ~/.ssh
+    - echo "=================deploy to host================="
+    - |
+      ssh -o StrictHostKeyChecking=no -t -t root@62.109.30.145 << EOF
+      docker login -u "$CI_DEPLOY_USERNAME" -p "$CI_DEPLOY_PASSWORD" registry.gitlab.com || {
+        echo "ERROR: Docker login failed";
+        exit 1;
+      }
+      docker pull ${CI_REGISTRY_IMAGE}:latest
+      cd ../lootor
+      
+      docker-compose -f docker-compose.backend.yml stop comments || true
+      docker-compose -f docker-compose.backend.yml pull comments
+      docker-compose -f docker-compose.backend.yml up -d comments
+      
+      docker-compose -f docker-compose.backend.yml ps
+      
+      exit
+      EOF
+  only:
+    - main

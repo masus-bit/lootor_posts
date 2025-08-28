@@ -1,0 +1,123 @@
+syntax = "proto3";
+
+import "google/protobuf/struct.proto";
+
+package posts;
+
+option go_package = "./gen/go/posts";
+
+service PostsService {
+  rpc CreatePost(CreatePostRequest) returns (PostResponse);
+
+  rpc GetAllPosts(GetAllPostsRequest) returns (GetAllPostsResponse);
+
+  rpc GetPostsByUser(GetPostsByUserRequest) returns (GetAllPostsResponse);
+
+  rpc DeletePost(DeletePostRequest) returns (DeletePostResponse);
+
+  rpc GetPost(PostRequest) returns (PostResponse);
+
+  rpc IncrementReaction(ReactRequest) returns (ReactResponse);
+
+  rpc DecrementReaction(ReactDecrementRequest) returns (ReactResponse);
+
+  rpc UpdatePost(UpdatePostRequest) returns (PostResponse);
+}
+
+message ReactRequest {
+  string reaction = 1;
+  string user_login = 2;
+  string post_id = 3;
+}
+
+message ReactDecrementRequest {
+  string reaction = 1;
+  string user_login = 2;
+  string post_id = 3;
+}
+
+message ReactResponse {
+  bool success = 1;
+  string user_login = 2;
+}
+
+message CreatePostRequest {
+  string date = 1;
+  google.protobuf.Struct content = 2;
+  string author = 3;
+}
+
+message UpdatePostRequest {
+  string id = 1;
+  google.protobuf.Struct content = 3;
+}
+
+message DeletePostRequest {
+  string id = 1;
+}
+
+message DeletePostResponse {
+  bool success = 1;
+}
+
+message PostRequest {
+string id = 1;
+bool is_premium = 2;
+string auth_user_login = 3;
+}
+
+message PostResponse {
+  PostItem data = 1;
+}
+
+message GetAllPostsRequest {
+  string offset = 2;
+  string limit = 3;
+  bool is_premium = 4;
+  string order = 5;
+  string auth_user_login = 6;
+}
+
+message GetPostsByUserRequest {
+  string login = 1;
+  string offset = 2;
+  string limit = 3;
+  bool is_premium = 4;
+  string auth_user_login = 5;
+}
+
+message GetAllPostsResponse {
+  repeated PostItem data = 1;
+  string total = 2;
+}
+
+message React {
+  string user_login = 1;
+  string post_id = 2;
+  string id = 3;
+  string created_at = 4;
+  string reaction = 5;
+}
+
+message PostItem {
+  string id = 1;
+  string date = 2;
+  google.protobuf.Struct content = 3;
+  string created_at = 4;
+  string updated_at = 5;
+  string deleted_at = 6;
+  int64 heart_count = 7;
+  int64 fire_count = 8;
+  int64 glasses_count = 9;
+  int64 laugh_count = 10;
+  int64 tears_count = 11;
+  int64 poker_face_count = 12;
+  int64 eyes_count = 13;
+  int64 angry_count = 14;
+  int64 shit_count = 15;
+  int64 clown_count = 16;
+  int64 total_reactions = 17;
+  string author = 18;
+  repeated React reactions = 19;
+  string reacted = 20;
+}

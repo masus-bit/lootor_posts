@@ -1,0 +1,146 @@
+package repositories
+
+import (
+	"gorm.io/gorm"
+	"lootor_posts/internal/core/models"
+	"strconv"
+	"time"
+)
+
+type PostsRepository struct {
+	db *gorm.DB
+}
+
+func NewPostsRepository(db *gorm.DB) *PostsRepository {
+	return &PostsRepository{db: db}
+}
+
+func (r *PostsRepository) CreateRecord(post *models.Posts) (*models.Posts, error) {
+
+	err := r.db.Create(post)
+	if err.Error != nil {
+		return nil, err.Error
+	}
+
+	return post, nil
+}
+
+func (r *PostsRepository) FindRecordsByUser(login, limit, offset string) ([]models.Posts, int64, error) {
+	var posts []models.Posts
+	var totalCount int64
+	limitInt, _ := strconv.Atoi(limit)
+	offsetInt, _ := strconv.Atoi(offset)
+	query := r.db.Unscoped().Where("author = ?", login)
+	query = query.Preload("Reactions")
+	query = query.Order("posts.date DESC").Limit(limitInt).Offset(offsetInt)
+	err := query.Find(&posts).Error
+	if err != nil {
+		return nil, 0, err
+	}
+	err = r.db.Model(&models.Posts{}).Unscoped().Where("author = ?", login).Count(&totalCount).Error
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return posts, totalCount, nil
+}
+
+func (r *PostsRepository) DeleteRecord(post *models.Posts) error {
+	deletedDate := time.Now().Format("2006-01-02 15:04:05")
+	err := r.db.Model(&models.Posts{}).Where("id = ?", post.Id).Update("deleted_at", deletedDate).Error
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *PostsRepository) FindRecordById(id string) (*models.Posts, error) {
+	var post models.Posts
+
+	query := r.db.Where("id = ?", id)
+	query = query.Preload("Reactions")
+	err := query.First(&post).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return &post, nil
+}
+
+func (r *PostsRepository) IncrementReactions(reactionType models.ReactionType, id string) error {
+
+	err := r.db.Model(&models.Posts{}).Where("id = ?", id).
+		Update(string(reactionType+"_count"), gorm.Expr("COALESCE("+string(reactionType)+"_count, 0) + ?", 1)).Error
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *PostsRepository) DecrementLikes(reactionType models.ReactionType, id string) error {
+
+	err := r.db.Model(&models.Posts{}).Where("id = ?", id).
+		Update(string(reactionType+"_count"), gorm.Expr("GREATEST(COALESCE("+string(reactionType)+"_count, 0) - ?, 0)", 1)).Error
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *PostsRepository) FindRecords(order, limit, offset string) ([]models.Posts, int64, error) {
+	var posts []models.Posts
+
+	var totalCount int64
+
+	limitInt, _ := strconv.Atoi(limit)
+	offsetInt, _ := strconv.Atoi(offset)
+
+	var orderBy string
+	switch order {
+	case "reactions":
+		orderBy = "total_reactions"
+	default:
+		orderBy = order
+	}
+
+	query := r.db.Unscoped().Order(orderBy + " DESC")
+	query = query.Preload("Reactions")
+	err := query.Limit(limitInt).Offset(offsetInt).Find(&posts).Error
+	if err != nil {
+		return nil, 0, err
+	}
+	err = r.db.Model(&models.Posts{}).Unscoped().Count(&totalCount).Error
+	if err != nil {
+		return nil, 0, err
+	}
+	return posts, totalCount, err
+
+}
+
+func (r *PostsRepository) UpdateFull(existsPost *models.Posts) (*models.Posts, error) {
+	err := r.db.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Model(existsPost).Select("*").Updates(existsPost).Error; err != nil {
+			return err
+		}
+		return nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	var result models.Posts
+
+	if err = r.db.
+		First(&result, "id = ?", existsPost.Id).
+		Error; err != nil {
+		return nil, err
+	}
+
+	return &result, nil
+}
