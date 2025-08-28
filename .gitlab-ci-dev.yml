@@ -63,9 +63,9 @@ deploy:
       cd ../lootor
       
       # Обновляем микросервис новостей
-      docker-compose -f docker-compose.backend.yml stop comments || true
-      docker-compose -f docker-compose.backend.yml pull comments
-      docker-compose -f docker-compose.backend.yml up -d comments
+      docker-compose -f docker-compose.backend.yml stop posts || true
+      docker-compose -f docker-compose.backend.yml pull posts
+      docker-compose -f docker-compose.backend.yml up -d posts
       
       docker-compose -f docker-compose.backend.yml ps
       docker logs lootor_posts --tail 50
