@@ -45,11 +45,13 @@ message CreatePostRequest {
   string date = 1;
   google.protobuf.Struct content = 2;
   string author = 3;
+  bool is_draft = 4;
 }
 
 message UpdatePostRequest {
   string id = 1;
-  google.protobuf.Struct content = 3;
+  google.protobuf.Struct content = 2;
+  bool is_draft = 3;
 }
 
 message DeletePostRequest {
@@ -84,6 +86,7 @@ message GetPostsByUserRequest {
   string limit = 3;
   bool is_premium = 4;
   string auth_user_login = 5;
+  bool is_draft = 6;
 }
 
 message GetAllPostsResponse {
@@ -120,4 +123,5 @@ message PostItem {
   string author = 18;
   repeated React reactions = 19;
   string reacted = 20;
+  bool is_draft = 21;
 }

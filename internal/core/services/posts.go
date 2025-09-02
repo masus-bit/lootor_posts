@@ -26,6 +26,7 @@ func (s *PostsService) CreatePost(dto *models.PostsRequest) (*models.PostDataRes
 		Date:    dto.Date,
 		Author:  dto.Author,
 		Content: dto.Content,
+		IsDraft: dto.IsDraft,
 	}
 
 	post, err := s.postsRepo.CreateRecord(post)
@@ -41,8 +42,8 @@ func (s *PostsService) CreatePost(dto *models.PostsRequest) (*models.PostDataRes
 	return &models.PostDataResponse{Data: postResponse}, nil
 }
 
-func (s *PostsService) GetPostsByUser(userLogin, limit, offset string, authUserIsPremium bool, authUserLogin string) (*models.PostsDataResponse, error) {
-	records, total, err := s.postsRepo.FindRecordsByUser(userLogin, limit, offset)
+func (s *PostsService) GetPostsByUser(userLogin, limit, offset string, authUserIsPremium bool, authUserLogin string, isDraft bool) (*models.PostsDataResponse, error) {
+	records, total, err := s.postsRepo.FindRecordsByUser(userLogin, limit, offset, isDraft)
 	if err != nil {
 		return nil, err
 	}
@@ -193,6 +194,7 @@ func (s *PostsService) UpdatePost(id string, dto *models.PostsRequest, ctx conte
 		return nil, err
 	}
 	post.Content = dto.Content
+	post.IsDraft = dto.IsDraft
 	_, err = s.postsRepo.UpdateFull(post)
 	if err != nil {
 		return nil, err

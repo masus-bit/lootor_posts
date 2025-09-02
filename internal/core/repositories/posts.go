@@ -25,19 +25,19 @@ func (r *PostsRepository) CreateRecord(post *models.Posts) (*models.Posts, error
 	return post, nil
 }
 
-func (r *PostsRepository) FindRecordsByUser(login, limit, offset string) ([]models.Posts, int64, error) {
+func (r *PostsRepository) FindRecordsByUser(login, limit, offset string, isDraft bool) ([]models.Posts, int64, error) {
 	var posts []models.Posts
 	var totalCount int64
 	limitInt, _ := strconv.Atoi(limit)
 	offsetInt, _ := strconv.Atoi(offset)
-	query := r.db.Unscoped().Where("author = ?", login)
+	query := r.db.Unscoped().Where("author = ?", login).Where("is_draft = ?", isDraft)
 	query = query.Preload("Reactions")
 	query = query.Order("posts.date DESC").Limit(limitInt).Offset(offsetInt)
 	err := query.Find(&posts).Error
 	if err != nil {
 		return nil, 0, err
 	}
-	err = r.db.Model(&models.Posts{}).Unscoped().Where("author = ?", login).Count(&totalCount).Error
+	err = r.db.Model(&models.Posts{}).Unscoped().Where("author = ?", login).Where("is_draft = ?", isDraft).Count(&totalCount).Error
 	if err != nil {
 		return nil, 0, err
 	}

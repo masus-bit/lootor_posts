@@ -43,6 +43,7 @@ func (s *PostsService) CreatePost(ctx context.Context, req *posts.CreatePostRequ
 		Date:    req.GetDate(),
 		Author:  req.GetAuthor(),
 		Content: contentJSON,
+		IsDraft: req.GetIsDraft(),
 	}
 
 	item, err := s.service.CreatePost(dto)
@@ -72,12 +73,13 @@ func (s *PostsService) CreatePost(ctx context.Context, req *posts.CreatePostRequ
 			CreatedAt: formatTime(item.Data.CreatedAt),
 			UpdatedAt: formatTime(item.Data.UpdatedAt),
 			Author:    item.Data.Author,
+			IsDraft:   item.Data.IsDraft,
 		},
 	}, nil
 }
 
 func (s *PostsService) GetPostsByUser(ctx context.Context, req *posts.GetPostsByUserRequest) (*posts.GetAllPostsResponse, error) {
-	allPosts, err := s.service.GetPostsByUser(req.GetLogin(), req.GetLimit(), req.GetOffset(), req.GetIsPremium(), req.GetAuthUserLogin())
+	allPosts, err := s.service.GetPostsByUser(req.GetLogin(), req.GetLimit(), req.GetOffset(), req.GetIsPremium(), req.GetAuthUserLogin(), req.GetIsDraft())
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
@@ -141,6 +143,7 @@ func (s *PostsService) GetPost(ctx context.Context, req *posts.PostRequest) (*po
 			PokerFaceCount: int64(post.Data.PokerFaceCount),
 			TotalReactions: int64(post.Data.TotalReactions),
 			TearsCount:     int64(post.Data.TearsCount),
+			IsDraft:        post.Data.IsDraft,
 		},
 	}, nil
 }
@@ -185,6 +188,7 @@ func (s *PostsService) UpdatePost(ctx context.Context, req *posts.UpdatePostRequ
 		Date:    "",
 		Author:  "",
 		Content: utils.NormalizeContent(req.GetContent()),
+		IsDraft: req.GetIsDraft(),
 	}, ctx)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
@@ -205,6 +209,7 @@ func (s *PostsService) UpdatePost(ctx context.Context, req *posts.UpdatePostRequ
 			UpdatedAt: post.Data.UpdatedAt.Format(time.RFC3339),
 			Author:    post.Data.Author,
 			Reactions: protoReacts,
+			IsDraft:   post.Data.IsDraft,
 		},
 	}, nil
 }
@@ -235,6 +240,7 @@ func convertPostsToProto(postList []models.PostResponse) []*posts.PostItem {
 			EyesCount:      int64(post.EyesCount),
 			PokerFaceCount: int64(post.PokerFaceCount),
 			TotalReactions: int64(post.TotalReactions),
+			IsDraft:        post.IsDraft,
 		})
 	}
 	return protoPostList
