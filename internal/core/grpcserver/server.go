@@ -185,8 +185,6 @@ func (s *PostsService) UpdatePost(ctx context.Context, req *posts.UpdatePostRequ
 		return nil, status.Error(codes.InvalidArgument, "content is required")
 	}
 	post, err := s.service.UpdatePost(req.GetId(), &models.PostsRequest{
-		Date:    "",
-		Author:  "",
 		Content: utils.NormalizeContent(req.GetContent()),
 		IsDraft: req.GetIsDraft(),
 	}, ctx)
@@ -202,14 +200,26 @@ func (s *PostsService) UpdatePost(ctx context.Context, req *posts.UpdatePostRequ
 	protoReacts := convertReactionsToProto(post.Data.Reactions)
 	return &posts.PostResponse{
 		Data: &posts.PostItem{
-			Id:        post.Data.Id.String(),
-			Date:      post.Data.Date,
-			Content:   protoContent,
-			CreatedAt: post.Data.CreatedAt.Format(time.RFC3339),
-			UpdatedAt: post.Data.UpdatedAt.Format(time.RFC3339),
-			Author:    post.Data.Author,
-			Reactions: protoReacts,
-			IsDraft:   post.Data.IsDraft,
+			Id:             post.Data.Id.String(),
+			Date:           post.Data.Date,
+			Content:        protoContent,
+			CreatedAt:      post.Data.CreatedAt.Format(time.RFC3339),
+			UpdatedAt:      post.Data.UpdatedAt.Format(time.RFC3339),
+			Author:         post.Data.Author,
+			Reactions:      protoReacts,
+			IsDraft:        post.Data.IsDraft,
+			Reacted:        post.Data.Reacted,
+			FireCount:      int64(post.Data.FireCount),
+			LaughCount:     int64(post.Data.LaughCount),
+			HeartCount:     int64(post.Data.HeartCount),
+			AngryCount:     int64(post.Data.AngryCount),
+			ShitCount:      int64(post.Data.ShitCount),
+			ClownCount:     int64(post.Data.ClownCount),
+			GlassesCount:   int64(post.Data.GlassesCount),
+			EyesCount:      int64(post.Data.EyesCount),
+			PokerFaceCount: int64(post.Data.PokerFaceCount),
+			TotalReactions: int64(post.Data.TotalReactions),
+			TearsCount:     int64(post.Data.TearsCount),
 		},
 	}, nil
 }

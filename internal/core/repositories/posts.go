@@ -136,7 +136,7 @@ func (r *PostsRepository) UpdateFull(existsPost *models.Posts) (*models.Posts, e
 
 	var result models.Posts
 
-	if err = r.db.
+	if err = r.db.Model(&models.Posts{}).
 		First(&result, "id = ?", existsPost.Id).
 		Error; err != nil {
 		return nil, err
