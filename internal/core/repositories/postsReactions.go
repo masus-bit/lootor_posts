@@ -3,7 +3,6 @@ package repositories
 import (
 	"gorm.io/gorm"
 	"lootor_posts/internal/core/models"
-	"time"
 )
 
 type PostReactionsRepository struct {
@@ -25,8 +24,7 @@ func (r *PostReactionsRepository) CreateRecord(reaction *models.PostReactions) (
 }
 
 func (r *PostReactionsRepository) DeleteRecord(reaction *models.PostReactions) error {
-	deletedDate := time.Now().Format("2006-01-02 15:04:05")
-	err := r.db.Model(&models.PostReactions{}).Where("id = ?", reaction.Id).Update("deleted_at", deletedDate).Error
+	err := r.db.Model(&models.PostReactions{}).Unscoped().Where("id = ?", reaction.Id).Delete(reaction).Error
 	if err != nil {
 		return err
 	}
