@@ -182,13 +182,13 @@ func (s *PostsService) UpdatePost(ctx context.Context, req *posts.UpdatePostRequ
 	}, nil
 }
 
-func (s *PostsService) IncrementViews(ctx context.Context, req *posts.ViewsRequest) (*posts.ReactResponse, error) {
+func (s *PostsService) IncrementViews(ctx context.Context, req *posts.ViewsRequest) (*posts.ViewsResponse, error) {
 	err := s.service.IncrementViews(req.GetPostIds(), ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	return &posts.ReactResponse{
+	return &posts.ViewsResponse{
 		Success: true,
 	}, nil
 }
