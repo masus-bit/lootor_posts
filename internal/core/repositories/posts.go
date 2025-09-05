@@ -144,3 +144,25 @@ func (r *PostsRepository) UpdateFull(existsPost *models.Posts) (*models.Posts, e
 
 	return &result, nil
 }
+
+func (r *PostsRepository) IncrementViews(ids []string) error {
+	err := r.db.Model(&models.Posts{}).Where("id IN (?)", ids).
+		Update("views", gorm.Expr("COALESCE(views, 0) + ?", 1)).Error
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *PostsRepository) IncrementCommentsCount(id string) error {
+	err := r.db.Model(&models.Posts{}).Where("id = ?", id).
+		Update("comments_count", gorm.Expr("COALESCE(comments_count, 0) + ?", 1)).Error
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

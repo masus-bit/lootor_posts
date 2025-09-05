@@ -22,12 +22,32 @@ service PostsService {
   rpc DecrementReaction(ReactDecrementRequest) returns (ReactResponse);
 
   rpc UpdatePost(UpdatePostRequest) returns (PostResponse);
+
+  rpc IncrementViews(ViewsRequest) returns (ViewsResponse);
+
+  rpc IncrementCommentsCount(CommentsCountRequest) returns (CommentsCountResponse);
 }
 
 message ReactRequest {
   string reaction = 1;
   string user_login = 2;
   string post_id = 3;
+}
+
+message CommentsCountRequest {
+  string post_id = 1;
+}
+
+message CommentsCountResponse {
+  bool success = 1;
+}
+
+message ViewsRequest {
+  repeated string post_ids = 1;
+}
+
+message ViewsResponse {
+  bool success = 1;
 }
 
 message ReactDecrementRequest {
@@ -124,4 +144,6 @@ message PostItem {
   repeated React reactions = 19;
   string reacted = 20;
   bool is_draft = 21;
+  int64 views = 22;
+  int64 comments_count = 23;
 }

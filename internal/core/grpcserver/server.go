@@ -123,28 +123,7 @@ func (s *PostsService) GetPost(ctx context.Context, req *posts.PostRequest) (*po
 	content, _ := utils.GormJSONToProtoStruct(post.Data.Content)
 	protoReacts := convertReactionsToProto(post.Data.Reactions)
 	return &posts.PostResponse{
-		Data: &posts.PostItem{
-			Id:             post.Data.Id.String(),
-			Date:           post.Data.Date,
-			Content:        content,
-			CreatedAt:      post.Data.CreatedAt.Format(time.RFC3339),
-			UpdatedAt:      post.Data.UpdatedAt.Format(time.RFC3339),
-			Author:         post.Data.Author,
-			Reactions:      protoReacts,
-			Reacted:        post.Data.Reacted,
-			FireCount:      int64(post.Data.FireCount),
-			LaughCount:     int64(post.Data.LaughCount),
-			HeartCount:     int64(post.Data.HeartCount),
-			AngryCount:     int64(post.Data.AngryCount),
-			ShitCount:      int64(post.Data.ShitCount),
-			ClownCount:     int64(post.Data.ClownCount),
-			GlassesCount:   int64(post.Data.GlassesCount),
-			EyesCount:      int64(post.Data.EyesCount),
-			PokerFaceCount: int64(post.Data.PokerFaceCount),
-			TotalReactions: int64(post.Data.TotalReactions),
-			TearsCount:     int64(post.Data.TearsCount),
-			IsDraft:        post.Data.IsDraft,
-		},
+		Data: utils.FillPostItem(&post.Data, content, protoReacts),
 	}, nil
 }
 
@@ -199,28 +178,29 @@ func (s *PostsService) UpdatePost(ctx context.Context, req *posts.UpdatePostRequ
 	}
 	protoReacts := convertReactionsToProto(post.Data.Reactions)
 	return &posts.PostResponse{
-		Data: &posts.PostItem{
-			Id:             post.Data.Id.String(),
-			Date:           post.Data.Date,
-			Content:        protoContent,
-			CreatedAt:      post.Data.CreatedAt.Format(time.RFC3339),
-			UpdatedAt:      post.Data.UpdatedAt.Format(time.RFC3339),
-			Author:         post.Data.Author,
-			Reactions:      protoReacts,
-			IsDraft:        post.Data.IsDraft,
-			Reacted:        post.Data.Reacted,
-			FireCount:      int64(post.Data.FireCount),
-			LaughCount:     int64(post.Data.LaughCount),
-			HeartCount:     int64(post.Data.HeartCount),
-			AngryCount:     int64(post.Data.AngryCount),
-			ShitCount:      int64(post.Data.ShitCount),
-			ClownCount:     int64(post.Data.ClownCount),
-			GlassesCount:   int64(post.Data.GlassesCount),
-			EyesCount:      int64(post.Data.EyesCount),
-			PokerFaceCount: int64(post.Data.PokerFaceCount),
-			TotalReactions: int64(post.Data.TotalReactions),
-			TearsCount:     int64(post.Data.TearsCount),
-		},
+		Data: utils.FillPostItem(&post.Data, protoContent, protoReacts),
+	}, nil
+}
+
+func (s *PostsService) IncrementViews(ctx context.Context, req *posts.ViewsRequest) (*posts.ReactResponse, error) {
+	err := s.service.IncrementViews(req.GetPostIds(), ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return &posts.ReactResponse{
+		Success: true,
+	}, nil
+}
+
+func (s *PostsService) IncrementCommentsCount(ctx context.Context, req *posts.CommentsCountRequest) (*posts.CommentsCountResponse, error) {
+	err := s.service.IncrementCommentsCount(req.GetPostId(), ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return &posts.CommentsCountResponse{
+		Success: true,
 	}, nil
 }
 
@@ -230,28 +210,7 @@ func convertPostsToProto(postList []models.PostResponse) []*posts.PostItem {
 	for _, post := range postList {
 		content, _ := utils.GormJSONToProtoStruct(post.Content)
 		protoReacts := convertReactionsToProto(post.Reactions)
-		protoPostList = append(protoPostList, &posts.PostItem{
-			Id:             post.Id.String(),
-			Date:           post.Date,
-			Content:        content,
-			CreatedAt:      post.CreatedAt.Format(time.RFC3339),
-			UpdatedAt:      post.UpdatedAt.Format(time.RFC3339),
-			Author:         post.Author,
-			Reactions:      protoReacts,
-			TearsCount:     int64(post.TearsCount),
-			Reacted:        post.Reacted,
-			FireCount:      int64(post.FireCount),
-			LaughCount:     int64(post.LaughCount),
-			HeartCount:     int64(post.HeartCount),
-			AngryCount:     int64(post.AngryCount),
-			ShitCount:      int64(post.ShitCount),
-			ClownCount:     int64(post.ClownCount),
-			GlassesCount:   int64(post.GlassesCount),
-			EyesCount:      int64(post.EyesCount),
-			PokerFaceCount: int64(post.PokerFaceCount),
-			TotalReactions: int64(post.TotalReactions),
-			IsDraft:        post.IsDraft,
-		})
+		protoPostList = append(protoPostList, utils.FillPostItem(&post, content, protoReacts))
 	}
 	return protoPostList
 }

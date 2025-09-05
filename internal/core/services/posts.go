@@ -206,3 +206,11 @@ func (s *PostsService) UpdatePost(id string, dto *models.PostsRequest, ctx conte
 	}
 	return &models.PostDataResponse{Data: postResponse}, nil
 }
+
+func (s *PostsService) IncrementViews(ids []string, ctx context.Context) error {
+	return s.postsRepo.IncrementViews(ids)
+}
+
+func (s *PostsService) IncrementCommentsCount(id string, ctx context.Context) error {
+	return s.postsRepo.IncrementCommentsCount(id)
+}

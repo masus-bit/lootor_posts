@@ -26,6 +26,8 @@ type Posts struct {
 	ShitCount      int       `gorm:"default:0" json:"shitCount"`
 	ClownCount     int       `gorm:"default:0" json:"clownCount"`
 	IsDraft        bool      `gorm:"default:false" json:"isDraft"`
+	Views          int       `gorm:"default:0" json:"views"`
+	CommentsCount  int       `gorm:"default:0" json:"commentsCount"`
 
 	TotalReactions int            `gorm:"->;type:integer GENERATED ALWAYS AS (heart_count + fire_count + glasses_count + laugh_count + tears_count + poker_face_count + eyes_count + angry_count + shit_count + clown_count) STORED" json:"totalReactions"`
 	Content        datatypes.JSON `gorm:"type:jsonb" json:"content"`
@@ -53,6 +55,8 @@ type PostResponse struct {
 	ClownCount     int       `gorm:"default:0" json:"clownCount"`
 	Reacted        string    `json:"reacted"`
 	IsDraft        bool      `gorm:"default:false" json:"isDraft"`
+	Views          int       `gorm:"default:0" json:"views"`
+	CommentsCount  int       `gorm:"default:0" json:"commentsCount"`
 
 	TotalReactions int `gorm:"->;type:GENERATED ALWAYS AS (heart_count + fire_count + glasses_count + laugh_count + tears_count + poker_face_count + eyes_count + angry_count + shit_count + clown_count)" json:"totalReactions"`
 
