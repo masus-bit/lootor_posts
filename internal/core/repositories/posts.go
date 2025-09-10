@@ -108,7 +108,7 @@ func (r *PostsRepository) FindRecords(order, limit, offset string) ([]models.Pos
 		orderBy = order
 	}
 
-	query := r.db.Unscoped().Order(orderBy + " DESC")
+	query := r.db.Unscoped().Where("is_draft = ?", false).Order(orderBy + " DESC")
 	query = query.Preload("Reactions")
 	err := query.Limit(limitInt).Offset(offsetInt).Find(&posts).Error
 	if err != nil {
