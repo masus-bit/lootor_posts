@@ -214,3 +214,11 @@ func (s *PostsService) IncrementViews(ids []string, ctx context.Context) error {
 func (s *PostsService) IncrementCommentsCount(id string, ctx context.Context) error {
 	return s.postsRepo.IncrementCommentsCount(id)
 }
+
+func (s *PostsService) GetCount(userLogin string, ctx context.Context) (int64, error) {
+	count, err := s.postsRepo.GetCount(userLogin)
+	if err != nil {
+		return 0, err
+	}
+	return count, nil
+}

@@ -204,6 +204,14 @@ func (s *PostsService) IncrementCommentsCount(ctx context.Context, req *posts.Co
 	}, nil
 }
 
+func (s *PostsService) GetCountByUser(ctx context.Context, req *posts.CountRequest) (*posts.CountResponse, error) {
+	count, err := s.service.GetCount(req.UserLogin, ctx)
+	if err != nil {
+		return nil, err
+	}
+	return &posts.CountResponse{Count: count}, nil
+}
+
 func convertPostsToProto(postList []models.PostResponse) []*posts.PostItem {
 	var protoPostList []*posts.PostItem
 

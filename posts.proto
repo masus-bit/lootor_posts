@@ -26,6 +26,16 @@ service PostsService {
   rpc IncrementViews(ViewsRequest) returns (ViewsResponse);
 
   rpc IncrementCommentsCount(CommentsCountRequest) returns (CommentsCountResponse);
+
+  rpc GetCountByUser(CountRequest) returns (CountResponse);
+}
+
+message CountRequest {
+  string user_login = 1;
+}
+
+message CountResponse {
+  int64 count = 1;
 }
 
 message ReactRequest {
