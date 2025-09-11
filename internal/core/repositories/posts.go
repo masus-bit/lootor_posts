@@ -36,7 +36,7 @@ func (r *PostsRepository) FindRecordsByUser(login, limit, offset string, isDraft
 	if err != nil {
 		return nil, 0, err
 	}
-	err = r.db.Model(&models.Posts{}).Unscoped().Where("author = ?", login).Where("is_draft = ?", isDraft).Count(&totalCount).Error
+	err = r.db.Model(&models.Posts{}).Unscoped().Where("author = ?", login).Where("is_draft = ?", isDraft).Where("deleted_at IS NULL").Count(&totalCount).Error
 	if err != nil {
 		return nil, 0, err
 	}
