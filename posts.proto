@@ -90,6 +90,7 @@ message DeletePostRequest {
 
 message DeletePostResponse {
   bool success = 1;
+  int64 react_count = 2;
 }
 
 message PostRequest {

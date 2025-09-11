@@ -4,7 +4,6 @@ import (
 	"gorm.io/gorm"
 	"lootor_posts/internal/core/models"
 	"strconv"
-	"time"
 )
 
 type PostsRepository struct {
@@ -30,7 +29,7 @@ func (r *PostsRepository) FindRecordsByUser(login, limit, offset string, isDraft
 	var totalCount int64
 	limitInt, _ := strconv.Atoi(limit)
 	offsetInt, _ := strconv.Atoi(offset)
-	query := r.db.Unscoped().Where("author = ?", login).Where("is_draft = ?", isDraft)
+	query := r.db.Unscoped().Where("author = ?", login).Where("is_draft = ?", isDraft).Where("deleted_at IS NULL")
 	query = query.Preload("Reactions")
 	query = query.Order("posts.date DESC").Limit(limitInt).Offset(offsetInt)
 	err := query.Find(&posts).Error
@@ -46,8 +45,7 @@ func (r *PostsRepository) FindRecordsByUser(login, limit, offset string, isDraft
 }
 
 func (r *PostsRepository) DeleteRecord(post *models.Posts) error {
-	deletedDate := time.Now().Format("2006-01-02 15:04:05")
-	err := r.db.Model(&models.Posts{}).Where("id = ?", post.Id).Update("deleted_at", deletedDate).Error
+	err := r.db.Delete(&models.Posts{}, "id = ?", post.Id).Error
 	if err != nil {
 		return err
 	}
@@ -58,7 +56,7 @@ func (r *PostsRepository) DeleteRecord(post *models.Posts) error {
 func (r *PostsRepository) FindRecordById(id string) (*models.Posts, error) {
 	var post models.Posts
 
-	query := r.db.Where("id = ?", id)
+	query := r.db.Where("id = ?", id).Where("deleted_at IS NULL")
 	query = query.Preload("Reactions")
 	err := query.First(&post).Error
 	if err != nil {
@@ -108,13 +106,13 @@ func (r *PostsRepository) FindRecords(order, limit, offset string) ([]models.Pos
 		orderBy = order
 	}
 
-	query := r.db.Unscoped().Where("is_draft = ?", false).Order(orderBy + " DESC")
+	query := r.db.Unscoped().Where("is_draft = ?", false).Order(orderBy + " DESC").Where("deleted_at IS NULL")
 	query = query.Preload("Reactions")
 	err := query.Limit(limitInt).Offset(offsetInt).Find(&posts).Error
 	if err != nil {
 		return nil, 0, err
 	}
-	err = r.db.Model(&models.Posts{}).Unscoped().Count(&totalCount).Error
+	err = r.db.Model(&models.Posts{}).Unscoped().Where("deleted_at IS NULL").Count(&totalCount).Error
 	if err != nil {
 		return nil, 0, err
 	}
@@ -173,6 +171,7 @@ func (r *PostsRepository) GetCount(userLogin string) (int64, error) {
 		Model(&models.Posts{}).
 		Where("is_draft = ?", false).
 		Where("author = ?", userLogin).
+		Where("deleted_at IS NULL").
 		Count(&count).Error
 
 	return count, err

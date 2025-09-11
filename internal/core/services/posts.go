@@ -185,7 +185,7 @@ func (s *PostsService) DeletePost(id string, ctx context.Context) (*types.Common
 	if err != nil {
 		return nil, err
 	}
-	return &types.CommonResponse{Data: types.Resp{Success: true}}, nil
+	return &types.CommonResponse{Data: types.Resp{Success: true}, ReactCount: int64(post.TotalReactions)}, nil
 }
 
 func (s *PostsService) UpdatePost(id string, dto *models.PostsRequest, ctx context.Context) (*models.PostDataResponse, error) {

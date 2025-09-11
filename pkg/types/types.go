@@ -7,6 +7,7 @@ type Resp struct {
 type CommonResponse struct {
 	Data       Resp   `json:"data"`
 	TargetUser string `json:"targetUser"`
+	ReactCount int64  `json:"reactCount"`
 }
 
 type FeedbackDto struct {

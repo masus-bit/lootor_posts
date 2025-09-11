@@ -92,13 +92,14 @@ func (s *PostsService) GetPostsByUser(ctx context.Context, req *posts.GetPostsBy
 }
 
 func (s *PostsService) DeletePost(ctx context.Context, req *posts.DeletePostRequest) (*posts.DeletePostResponse, error) {
-	_, err := s.service.DeletePost(req.GetId(), ctx)
+	result, err := s.service.DeletePost(req.GetId(), ctx)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
 	return &posts.DeletePostResponse{
-		Success: true,
+		Success:    true,
+		ReactCount: result.ReactCount,
 	}, nil
 }
 
