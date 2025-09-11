@@ -112,7 +112,7 @@ func (r *PostsRepository) FindRecords(order, limit, offset string) ([]models.Pos
 	if err != nil {
 		return nil, 0, err
 	}
-	err = r.db.Model(&models.Posts{}).Unscoped().Where("deleted_at IS NULL").Count(&totalCount).Error
+	err = r.db.Model(&models.Posts{}).Unscoped().Where("deleted_at IS NULL").Where("is_draft = ?", false).Count(&totalCount).Error
 	if err != nil {
 		return nil, 0, err
 	}
