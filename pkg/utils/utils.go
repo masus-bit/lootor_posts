@@ -57,5 +57,6 @@ func FillPostItem(post *models.PostResponse, content *structpb.Struct, protoReac
 		IsDraft:        post.IsDraft,
 		Views:          int64(post.Views),
 		CommentsCount:  int64(post.CommentsCount),
+		Title:          post.Title,
 	}
 }

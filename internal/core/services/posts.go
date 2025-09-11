@@ -27,6 +27,7 @@ func (s *PostsService) CreatePost(dto *models.PostsRequest) (*models.PostDataRes
 		Author:  dto.Author,
 		Content: dto.Content,
 		IsDraft: dto.IsDraft,
+		Title:   dto.Title,
 	}
 
 	post, err := s.postsRepo.CreateRecord(post)
@@ -185,7 +186,7 @@ func (s *PostsService) DeletePost(id string, ctx context.Context) (*types.Common
 	if err != nil {
 		return nil, err
 	}
-	return &types.CommonResponse{Data: types.Resp{Success: true}, ReactCount: int64(post.TotalReactions)}, nil
+	return &types.CommonResponse{Data: types.Resp{Success: true}, ReactCount: int64(post.TotalReactions), Title: post.Title}, nil
 }
 
 func (s *PostsService) UpdatePost(id string, dto *models.PostsRequest, ctx context.Context) (*models.PostDataResponse, error) {
@@ -195,6 +196,7 @@ func (s *PostsService) UpdatePost(id string, dto *models.PostsRequest, ctx conte
 	}
 	post.Content = dto.Content
 	post.IsDraft = dto.IsDraft
+	post.Title = dto.Title
 	_, err = s.postsRepo.UpdateFull(post)
 	if err != nil {
 		return nil, err

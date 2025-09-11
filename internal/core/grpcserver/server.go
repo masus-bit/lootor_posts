@@ -44,6 +44,7 @@ func (s *PostsService) CreatePost(ctx context.Context, req *posts.CreatePostRequ
 		Author:  req.GetAuthor(),
 		Content: contentJSON,
 		IsDraft: req.GetIsDraft(),
+		Title:   req.GetTitle(),
 	}
 
 	item, err := s.service.CreatePost(dto)
@@ -74,6 +75,7 @@ func (s *PostsService) CreatePost(ctx context.Context, req *posts.CreatePostRequ
 			UpdatedAt: formatTime(item.Data.UpdatedAt),
 			Author:    item.Data.Author,
 			IsDraft:   item.Data.IsDraft,
+			Title:     item.Data.Title,
 		},
 	}, nil
 }
@@ -100,6 +102,7 @@ func (s *PostsService) DeletePost(ctx context.Context, req *posts.DeletePostRequ
 	return &posts.DeletePostResponse{
 		Success:    true,
 		ReactCount: result.ReactCount,
+		Title:      result.Title,
 	}, nil
 }
 
@@ -167,6 +170,7 @@ func (s *PostsService) UpdatePost(ctx context.Context, req *posts.UpdatePostRequ
 	post, err := s.service.UpdatePost(req.GetId(), &models.PostsRequest{
 		Content: utils.NormalizeContent(req.GetContent()),
 		IsDraft: req.GetIsDraft(),
+		Title:   req.GetTitle(),
 	}, ctx)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())

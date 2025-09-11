@@ -28,6 +28,7 @@ type Posts struct {
 	IsDraft        bool      `gorm:"default:false" json:"isDraft"`
 	Views          int       `gorm:"default:0" json:"views"`
 	CommentsCount  int       `gorm:"default:0" json:"commentsCount"`
+	Title          string    `json:"title"`
 
 	TotalReactions int            `gorm:"->;type:integer GENERATED ALWAYS AS (heart_count + fire_count + glasses_count + laugh_count + tears_count + poker_face_count + eyes_count + angry_count + shit_count + clown_count) STORED" json:"totalReactions"`
 	Content        datatypes.JSON `gorm:"type:jsonb" json:"content"`
@@ -57,6 +58,7 @@ type PostResponse struct {
 	IsDraft        bool      `gorm:"default:false" json:"isDraft"`
 	Views          int       `gorm:"default:0" json:"views"`
 	CommentsCount  int       `gorm:"default:0" json:"commentsCount"`
+	Title          string    `json:"title"`
 
 	TotalReactions int `gorm:"->;type:GENERATED ALWAYS AS (heart_count + fire_count + glasses_count + laugh_count + tears_count + poker_face_count + eyes_count + angry_count + shit_count + clown_count)" json:"totalReactions"`
 
@@ -78,6 +80,7 @@ type PostsRequest struct {
 	Date    string `json:"date"`
 	Author  string `json:"author"`
 	IsDraft bool   `json:"isDraft"`
+	Title   string `json:"title"`
 
 	Content datatypes.JSON `json:"content"`
 }

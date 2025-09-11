@@ -76,12 +76,14 @@ message CreatePostRequest {
   google.protobuf.Struct content = 2;
   string author = 3;
   bool is_draft = 4;
+  string title = 5;
 }
 
 message UpdatePostRequest {
   string id = 1;
   google.protobuf.Struct content = 2;
   bool is_draft = 3;
+  string title = 4;
 }
 
 message DeletePostRequest {
@@ -91,6 +93,7 @@ message DeletePostRequest {
 message DeletePostResponse {
   bool success = 1;
   int64 react_count = 2;
+  string title = 3;
 }
 
 message PostRequest {
@@ -157,4 +160,5 @@ message PostItem {
   bool is_draft = 21;
   int64 views = 22;
   int64 comments_count = 23;
+  string title = 24;
 }
