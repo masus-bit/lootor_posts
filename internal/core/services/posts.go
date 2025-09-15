@@ -129,6 +129,31 @@ func (s *PostsService) GetPost(ctx context.Context, id uint64, authUserIsPremium
 	return &models.PostDataResponse{Data: postResponse}, nil
 }
 
+func (s *PostsService) GetPostByTranslit(ctx context.Context, translit string, authUserIsPremium bool, authUserLogin string) (*models.PostDataResponse, error) {
+	post, err := s.postsRepo.FindRecordByTranslit(translit)
+	if err != nil {
+		return nil, err
+	}
+
+	var postResponse models.PostResponse
+	err = mapstructure.Decode(post, &postResponse)
+	if err != nil {
+		return nil, err
+	}
+	postResponse.Reacted = ""
+	for _, reaction := range post.Reactions {
+		if reaction.UserLogin == authUserLogin {
+			postResponse.Reacted = string(reaction.Reaction)
+			break
+		}
+	}
+	if !authUserIsPremium {
+		postResponse.Reactions = nil
+	}
+
+	return &models.PostDataResponse{Data: postResponse}, nil
+}
+
 func (s *PostsService) IncrementReactions(id uint64, reactionType models.ReactionType, ctx context.Context, userLogin string) (string, error) {
 	existsReaction, _ := s.reactionsRepo.FindReaction(strconv.FormatUint(id, 10), userLogin)
 	author := ""

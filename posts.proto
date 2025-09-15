@@ -28,6 +28,8 @@ service PostsService {
   rpc IncrementCommentsCount(CommentsCountRequest) returns (CommentsCountResponse);
 
   rpc GetCountByUser(CountRequest) returns (CountResponse);
+
+  rpc GetPostByTranslit(PostRequestByTranslit) returns (PostResponse);
 }
 
 message CountRequest {
@@ -99,6 +101,12 @@ message DeletePostResponse {
 
 message PostRequest {
   uint64 id = 1;
+  bool is_premium = 2;
+  string auth_user_login = 3;
+}
+
+message PostRequestByTranslit {
+  string translit = 1;
   bool is_premium = 2;
   string auth_user_login = 3;
 }

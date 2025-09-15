@@ -132,6 +132,18 @@ func (s *PostsService) GetPost(ctx context.Context, req *posts.PostRequest) (*po
 	}, nil
 }
 
+func (s *PostsService) GetPostByTranslit(ctx context.Context, req *posts.PostRequestByTranslit) (*posts.PostResponse, error) {
+	post, err := s.service.GetPostByTranslit(ctx, req.GetTranslit(), req.GetIsPremium(), req.GetAuthUserLogin())
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+	content, _ := utils.GormJSONToProtoStruct(post.Data.Content)
+	protoReacts := convertReactionsToProto(post.Data.Reactions)
+	return &posts.PostResponse{
+		Data: utils.FillPostItem(&post.Data, content, protoReacts),
+	}, nil
+}
+
 func (s *PostsService) IncrementReaction(ctx context.Context, req *posts.ReactRequest) (*posts.ReactResponse, error) {
 	author, err := s.service.IncrementReactions(req.GetPostId(), models.ReactionType(req.GetReaction()), ctx, req.GetUserLogin())
 	if err != nil {

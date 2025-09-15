@@ -66,6 +66,19 @@ func (r *PostsRepository) FindRecordById(id uint64) (*models.Posts, error) {
 	return &post, nil
 }
 
+func (r *PostsRepository) FindRecordByTranslit(translit string) (*models.Posts, error) {
+	var post models.Posts
+
+	query := r.db.Where("translit = ?", translit).Where("deleted_at IS NULL")
+	query = query.Preload("Reactions")
+	err := query.First(&post).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return &post, nil
+}
+
 func (r *PostsRepository) IncrementReactions(reactionType models.ReactionType, id uint64) error {
 
 	err := r.db.Model(&models.Posts{}).Where("id = ?", id).
