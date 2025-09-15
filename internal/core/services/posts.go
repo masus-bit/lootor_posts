@@ -7,6 +7,7 @@ import (
 	"lootor_posts/internal/core/models"
 	"lootor_posts/internal/core/repositories"
 	"lootor_posts/pkg/types"
+	"strconv"
 )
 
 type PostsService struct {
@@ -103,7 +104,7 @@ func (s *PostsService) GetAllPosts(order, limit, offset string, authUserIsPremiu
 	}, nil
 }
 
-func (s *PostsService) GetPost(ctx context.Context, id string, authUserIsPremium bool, authUserLogin string) (*models.PostDataResponse, error) {
+func (s *PostsService) GetPost(ctx context.Context, id uint64, authUserIsPremium bool, authUserLogin string) (*models.PostDataResponse, error) {
 	post, err := s.postsRepo.FindRecordById(id)
 	if err != nil {
 		return nil, err
@@ -128,8 +129,8 @@ func (s *PostsService) GetPost(ctx context.Context, id string, authUserIsPremium
 	return &models.PostDataResponse{Data: postResponse}, nil
 }
 
-func (s *PostsService) IncrementReactions(id string, reactionType models.ReactionType, ctx context.Context, userLogin string) (string, error) {
-	existsReaction, _ := s.reactionsRepo.FindReaction(id, userLogin)
+func (s *PostsService) IncrementReactions(id uint64, reactionType models.ReactionType, ctx context.Context, userLogin string) (string, error) {
+	existsReaction, _ := s.reactionsRepo.FindReaction(strconv.FormatUint(id, 10), userLogin)
 	author := ""
 	if existsReaction != nil {
 		_, err := s.DecrementReactions(id, existsReaction.Reaction, ctx, userLogin)
@@ -154,13 +155,13 @@ func (s *PostsService) IncrementReactions(id string, reactionType models.Reactio
 	return author, nil
 }
 
-func (s *PostsService) DecrementReactions(postId string, reactionType models.ReactionType, ctx context.Context, userLogin string) (string, error) {
+func (s *PostsService) DecrementReactions(postId uint64, reactionType models.ReactionType, ctx context.Context, userLogin string) (string, error) {
 	err := s.postsRepo.DecrementLikes(reactionType, postId)
 	author := ""
 	if err != nil {
 		return "", err
 	}
-	react, _ := s.reactionsRepo.FindReaction(postId, userLogin)
+	react, _ := s.reactionsRepo.FindReaction(strconv.FormatUint(postId, 10), userLogin)
 	if react == nil {
 		return "", errors.New("reaction not found")
 	}
@@ -177,7 +178,7 @@ func (s *PostsService) DecrementReactions(postId string, reactionType models.Rea
 	return author, nil
 }
 
-func (s *PostsService) DeletePost(id string, ctx context.Context) (*types.CommonResponse, error) {
+func (s *PostsService) DeletePost(id uint64, ctx context.Context) (*types.CommonResponse, error) {
 	post, err := s.postsRepo.FindRecordById(id)
 	if err != nil {
 		return nil, err
@@ -189,7 +190,7 @@ func (s *PostsService) DeletePost(id string, ctx context.Context) (*types.Common
 	return &types.CommonResponse{Data: types.Resp{Success: true}, ReactCount: int64(post.TotalReactions), Title: post.Title}, nil
 }
 
-func (s *PostsService) UpdatePost(id string, dto *models.PostsRequest, ctx context.Context) (*models.PostDataResponse, error) {
+func (s *PostsService) UpdatePost(id uint64, dto *models.PostsRequest, ctx context.Context) (*models.PostDataResponse, error) {
 	post, err := s.postsRepo.FindRecordById(id)
 	if err != nil {
 		return nil, err
@@ -197,6 +198,7 @@ func (s *PostsService) UpdatePost(id string, dto *models.PostsRequest, ctx conte
 	post.Content = dto.Content
 	post.IsDraft = dto.IsDraft
 	post.Title = dto.Title
+	post.Translit = dto.Translit
 	_, err = s.postsRepo.UpdateFull(post)
 	if err != nil {
 		return nil, err
@@ -209,11 +211,11 @@ func (s *PostsService) UpdatePost(id string, dto *models.PostsRequest, ctx conte
 	return &models.PostDataResponse{Data: postResponse}, nil
 }
 
-func (s *PostsService) IncrementViews(ids []string, ctx context.Context) error {
+func (s *PostsService) IncrementViews(ids []uint64, ctx context.Context) error {
 	return s.postsRepo.IncrementViews(ids)
 }
 
-func (s *PostsService) IncrementCommentsCount(id string, ctx context.Context) error {
+func (s *PostsService) IncrementCommentsCount(id uint64, ctx context.Context) error {
 	return s.postsRepo.IncrementCommentsCount(id)
 }
 

@@ -53,7 +53,7 @@ func (r *PostsRepository) DeleteRecord(post *models.Posts) error {
 	return nil
 }
 
-func (r *PostsRepository) FindRecordById(id string) (*models.Posts, error) {
+func (r *PostsRepository) FindRecordById(id uint64) (*models.Posts, error) {
 	var post models.Posts
 
 	query := r.db.Where("id = ?", id).Where("deleted_at IS NULL")
@@ -66,7 +66,7 @@ func (r *PostsRepository) FindRecordById(id string) (*models.Posts, error) {
 	return &post, nil
 }
 
-func (r *PostsRepository) IncrementReactions(reactionType models.ReactionType, id string) error {
+func (r *PostsRepository) IncrementReactions(reactionType models.ReactionType, id uint64) error {
 
 	err := r.db.Model(&models.Posts{}).Where("id = ?", id).
 		Update(string(reactionType+"_count"), gorm.Expr("COALESCE("+string(reactionType)+"_count, 0) + ?", 1)).Error
@@ -78,7 +78,7 @@ func (r *PostsRepository) IncrementReactions(reactionType models.ReactionType, i
 	return nil
 }
 
-func (r *PostsRepository) DecrementLikes(reactionType models.ReactionType, id string) error {
+func (r *PostsRepository) DecrementLikes(reactionType models.ReactionType, id uint64) error {
 
 	err := r.db.Model(&models.Posts{}).Where("id = ?", id).
 		Update(string(reactionType+"_count"), gorm.Expr("GREATEST(COALESCE("+string(reactionType)+"_count, 0) - ?, 0)", 1)).Error
@@ -143,7 +143,7 @@ func (r *PostsRepository) UpdateFull(existsPost *models.Posts) (*models.Posts, e
 	return &result, nil
 }
 
-func (r *PostsRepository) IncrementViews(ids []string) error {
+func (r *PostsRepository) IncrementViews(ids []uint64) error {
 	err := r.db.Model(&models.Posts{}).Where("id IN (?)", ids).
 		Update("views", gorm.Expr("COALESCE(views, 0) + ?", 1)).Error
 
@@ -154,7 +154,7 @@ func (r *PostsRepository) IncrementViews(ids []string) error {
 	return nil
 }
 
-func (r *PostsRepository) IncrementCommentsCount(id string) error {
+func (r *PostsRepository) IncrementCommentsCount(id uint64) error {
 	err := r.db.Model(&models.Posts{}).Where("id = ?", id).
 		Update("comments_count", gorm.Expr("COALESCE(comments_count, 0) + ?", 1)).Error
 

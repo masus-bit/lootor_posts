@@ -68,7 +68,7 @@ func (s *PostsService) CreatePost(ctx context.Context, req *posts.CreatePostRequ
 
 	return &posts.PostResponse{
 		Data: &posts.PostItem{
-			Id:        item.Data.Id.String(),
+			Id:        uint64(item.Data.Id),
 			Date:      item.Data.Date,
 			Content:   content,
 			CreatedAt: formatTime(item.Data.CreatedAt),
@@ -76,6 +76,7 @@ func (s *PostsService) CreatePost(ctx context.Context, req *posts.CreatePostRequ
 			Author:    item.Data.Author,
 			IsDraft:   item.Data.IsDraft,
 			Title:     item.Data.Title,
+			Translit:  item.Data.Translit,
 		},
 	}, nil
 }
@@ -160,7 +161,7 @@ func (s *PostsService) UpdatePost(ctx context.Context, req *posts.UpdatePostRequ
 		return nil, status.Error(codes.InvalidArgument, "request cannot be nil")
 	}
 
-	if req.GetId() == "" {
+	if req.GetId() == 0 {
 		return nil, status.Error(codes.InvalidArgument, "id is required")
 	}
 
@@ -168,9 +169,10 @@ func (s *PostsService) UpdatePost(ctx context.Context, req *posts.UpdatePostRequ
 		return nil, status.Error(codes.InvalidArgument, "content is required")
 	}
 	post, err := s.service.UpdatePost(req.GetId(), &models.PostsRequest{
-		Content: utils.NormalizeContent(req.GetContent()),
-		IsDraft: req.GetIsDraft(),
-		Title:   req.GetTitle(),
+		Content:  utils.NormalizeContent(req.GetContent()),
+		IsDraft:  req.GetIsDraft(),
+		Title:    req.GetTitle(),
+		Translit: req.GetTranslit(),
 	}, ctx)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
