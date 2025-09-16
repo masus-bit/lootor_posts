@@ -109,7 +109,6 @@ func (s *PostsService) GetPost(ctx context.Context, id uint64, authUserIsPremium
 	if err != nil {
 		return nil, err
 	}
-
 	var postResponse models.PostResponse
 	err = mapstructure.Decode(post, &postResponse)
 	if err != nil {
