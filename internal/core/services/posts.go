@@ -223,7 +223,9 @@ func (s *PostsService) UpdatePost(id uint64, dto *models.PostsRequest, ctx conte
 	post.Content = dto.Content
 	post.IsDraft = dto.IsDraft
 	post.Title = dto.Title
-	post.Translit = dto.Translit
+	if dto.Translit != "" && dto.Translit != post.Translit {
+		post.Translit = dto.Translit
+	}
 	_, err = s.postsRepo.UpdateFull(post)
 	if err != nil {
 		return nil, err
