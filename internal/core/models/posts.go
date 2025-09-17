@@ -73,6 +73,10 @@ type PostsDataResponse struct {
 	Total int64          `json:"total"`
 }
 
+type PostsMap struct {
+	Posts map[string]Posts `json:"posts"`
+}
+
 type PostDataResponse struct {
 	Data PostResponse `json:"data"`
 }

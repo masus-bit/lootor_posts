@@ -189,3 +189,17 @@ func (r *PostsRepository) GetCount(userLogin string) (int64, error) {
 
 	return count, err
 }
+
+func (r *PostsRepository) GetPostsByIdsMap(ids []string) (map[string]models.Posts, error) {
+	var posts []models.Posts
+	err := r.db.Where("translit IN (?)", ids).Find(&posts).Error
+	if err != nil {
+		return nil, err
+	}
+	result := make(map[string]models.Posts)
+	for _, post := range posts {
+		result[post.Translit] = post
+	}
+	return result, nil
+
+}

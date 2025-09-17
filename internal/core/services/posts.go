@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"errors"
+	"fmt"
 	"github.com/mitchellh/mapstructure"
 	"lootor_posts/internal/core/models"
 	"lootor_posts/internal/core/repositories"
@@ -251,4 +252,13 @@ func (s *PostsService) GetCount(userLogin string, ctx context.Context) (int64, e
 		return 0, err
 	}
 	return count, nil
+}
+
+func (s *PostsService) GetByIds(ids []string, ctx context.Context) (*models.PostsMap, error) {
+	posts, err := s.postsRepo.GetPostsByIdsMap(ids)
+	fmt.Println(posts)
+	if err != nil {
+		return nil, err
+	}
+	return &models.PostsMap{Posts: posts}, nil
 }

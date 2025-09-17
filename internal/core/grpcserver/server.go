@@ -231,6 +231,26 @@ func (s *PostsService) GetCountByUser(ctx context.Context, req *posts.CountReque
 	return &posts.CountResponse{Count: count}, nil
 }
 
+func (s *PostsService) GetPostsByIds(ctx context.Context, req *posts.GetPostsByIdsMapRequest) (*posts.GetPostsByIdsMapResponse, error) {
+	postList, err := s.service.GetByIds(req.PostIds, ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	var resultMap map[string]*posts.ShortPostItem
+
+	resultMap = make(map[string]*posts.ShortPostItem)
+	for key, post := range postList.Posts {
+		resultMap[key] = &posts.ShortPostItem{
+			Id:       strconv.FormatUint(post.Id, 10),
+			Title:    post.Title,
+			Author:   post.Author,
+			Translit: post.Translit,
+		}
+	}
+	return &posts.GetPostsByIdsMapResponse{Data: resultMap}, nil
+}
+
 func convertPostsToProto(postList []models.PostResponse) []*posts.PostItem {
 	var protoPostList []*posts.PostItem
 

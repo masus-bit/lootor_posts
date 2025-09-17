@@ -30,6 +30,16 @@ service PostsService {
   rpc GetCountByUser(CountRequest) returns (CountResponse);
 
   rpc GetPostByTranslit(PostRequestByTranslit) returns (PostResponse);
+
+  rpc GetPostsByIds(GetPostsByIdsMapRequest) returns (GetPostsByIdsMapResponse);
+}
+
+message GetPostsByIdsMapRequest {
+  repeated string post_ids = 1;
+}
+
+message GetPostsByIdsMapResponse {
+  map<string, ShortPostItem> data = 1;
 }
 
 message CountRequest {
@@ -171,4 +181,11 @@ message PostItem {
   int64 comments_count = 23;
   string title = 24;
   string translit = 25;
+}
+
+message ShortPostItem {
+  string id = 1;
+  string title = 2;
+  string author = 3;
+  string translit = 4;
 }
