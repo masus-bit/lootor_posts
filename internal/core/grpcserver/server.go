@@ -232,21 +232,17 @@ func (s *PostsService) GetCountByUser(ctx context.Context, req *posts.CountReque
 }
 
 func (s *PostsService) GetPostsByIds(ctx context.Context, req *posts.GetPostsByIdsMapRequest) (*posts.GetPostsByIdsMapResponse, error) {
-	postList, err := s.service.GetByIds(req.PostIds, ctx)
+	postList, err := s.service.GetByIds(req.PostIds, req.AuthUserLogin, req.IsPremium, ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	var resultMap map[string]*posts.ShortPostItem
+	var resultMap map[string]*posts.PostItem
 
-	resultMap = make(map[string]*posts.ShortPostItem)
+	resultMap = make(map[string]*posts.PostItem)
 	for key, post := range postList.Posts {
-		resultMap[key] = &posts.ShortPostItem{
-			Id:       strconv.FormatUint(post.Id, 10),
-			Title:    post.Title,
-			Author:   post.Author,
-			Translit: post.Translit,
-		}
+		content, _ := utils.GormJSONToProtoStruct(post.Content)
+		resultMap[key] = utils.FillPostItem(&post, content, convertReactionsToProto(post.Reactions))
 	}
 	return &posts.GetPostsByIdsMapResponse{Data: resultMap}, nil
 }

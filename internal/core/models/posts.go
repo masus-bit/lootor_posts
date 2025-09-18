@@ -74,7 +74,7 @@ type PostsDataResponse struct {
 }
 
 type PostsMap struct {
-	Posts map[string]Posts `json:"posts"`
+	Posts map[string]PostResponse `json:"posts"`
 }
 
 type PostDataResponse struct {

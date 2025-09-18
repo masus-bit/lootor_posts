@@ -3,7 +3,6 @@ package services
 import (
 	"context"
 	"errors"
-	"fmt"
 	"github.com/mitchellh/mapstructure"
 	"lootor_posts/internal/core/models"
 	"lootor_posts/internal/core/repositories"
@@ -254,11 +253,29 @@ func (s *PostsService) GetCount(userLogin string, ctx context.Context) (int64, e
 	return count, nil
 }
 
-func (s *PostsService) GetByIds(ids []string, ctx context.Context) (*models.PostsMap, error) {
+func (s *PostsService) GetByIds(ids []string, authUserLogin string, authUserIsPremium bool, ctx context.Context) (*models.PostsMap, error) {
 	posts, err := s.postsRepo.GetPostsByIdsMap(ids)
-	fmt.Println(posts)
+	postsMap := make(map[string]models.PostResponse)
+	for key, record := range posts {
+		var postResponse models.PostResponse
+		err = mapstructure.Decode(record, &postResponse)
+		if err != nil {
+			return nil, err
+		}
+		postResponse.Reacted = ""
+		for _, reaction := range record.Reactions {
+			if reaction.UserLogin == authUserLogin {
+				postResponse.Reacted = string(reaction.Reaction)
+				break
+			}
+		}
+		if !authUserIsPremium {
+			postResponse.Reactions = nil
+		}
+		postsMap[key] = postResponse
+	}
 	if err != nil {
 		return nil, err
 	}
-	return &models.PostsMap{Posts: posts}, nil
+	return &models.PostsMap{Posts: postsMap}, nil
 }

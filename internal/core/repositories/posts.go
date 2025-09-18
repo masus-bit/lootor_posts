@@ -192,7 +192,7 @@ func (r *PostsRepository) GetCount(userLogin string) (int64, error) {
 
 func (r *PostsRepository) GetPostsByIdsMap(ids []string) (map[string]models.Posts, error) {
 	var posts []models.Posts
-	err := r.db.Where("translit IN (?)", ids).Find(&posts).Error
+	err := r.db.Where("translit IN (?) AND deleted_at IS NULL", ids).Preload("Reactions").Find(&posts).Error
 	if err != nil {
 		return nil, err
 	}

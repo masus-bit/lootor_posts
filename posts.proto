@@ -36,10 +36,12 @@ service PostsService {
 
 message GetPostsByIdsMapRequest {
   repeated string post_ids = 1;
+  string auth_user_login = 2;
+  bool is_premium = 3;
 }
 
 message GetPostsByIdsMapResponse {
-  map<string, ShortPostItem> data = 1;
+  map<string, PostItem> data = 1;
 }
 
 message CountRequest {
@@ -181,11 +183,4 @@ message PostItem {
   int64 comments_count = 23;
   string title = 24;
   string translit = 25;
-}
-
-message ShortPostItem {
-  string id = 1;
-  string title = 2;
-  string author = 3;
-  string translit = 4;
 }
