@@ -178,6 +178,17 @@ func (r *PostsRepository) IncrementCommentsCount(id uint64) error {
 	return nil
 }
 
+func (r *PostsRepository) DecrementCommentsCount(id uint64) error {
+	err := r.db.Model(&models.Posts{}).Where("id = ?", id).
+		Update("comments_count", gorm.Expr("GREATEST(COALESCE(comments_count, 0) - ?, 0)", 1)).Error
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (r *PostsRepository) GetCount(userLogin string) (int64, error) {
 	var count int64
 	err := r.db.

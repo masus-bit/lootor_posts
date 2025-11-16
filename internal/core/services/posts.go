@@ -245,6 +245,10 @@ func (s *PostsService) IncrementCommentsCount(id uint64, ctx context.Context) er
 	return s.postsRepo.IncrementCommentsCount(id)
 }
 
+func (s *PostsService) DecrementCommentsCount(id uint64, ctx context.Context) error {
+	return s.postsRepo.DecrementCommentsCount(id)
+}
+
 func (s *PostsService) GetCount(userLogin string, ctx context.Context) (int64, error) {
 	count, err := s.postsRepo.GetCount(userLogin)
 	if err != nil {

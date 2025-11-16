@@ -27,6 +27,8 @@ service PostsService {
 
   rpc IncrementCommentsCount(CommentsCountRequest) returns (CommentsCountResponse);
 
+  rpc DecrementCommentsCount(CommentsCountRequest) returns (CommentsCountResponse);
+
   rpc GetCountByUser(CountRequest) returns (CountResponse);
 
   rpc GetPostByTranslit(PostRequestByTranslit) returns (PostResponse);

@@ -223,6 +223,17 @@ func (s *PostsService) IncrementCommentsCount(ctx context.Context, req *posts.Co
 	}, nil
 }
 
+func (s *PostsService) DecrementCommentsCount(ctx context.Context, req *posts.CommentsCountRequest) (*posts.CommentsCountResponse, error) {
+	err := s.service.DecrementCommentsCount(req.GetPostId(), ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return &posts.CommentsCountResponse{
+		Success: true,
+	}, nil
+}
+
 func (s *PostsService) GetCountByUser(ctx context.Context, req *posts.CountRequest) (*posts.CountResponse, error) {
 	count, err := s.service.GetCount(req.UserLogin, ctx)
 	if err != nil {
