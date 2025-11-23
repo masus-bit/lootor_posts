@@ -60,7 +60,7 @@ deploy:
         exit 1;
       }
       
-      docker pull registry.gitlab.com/auc2/backend_services/lootor_posts:latest
+      docker service update --force --image registry.gitlab.com/auc2/backend_services/lootor_posts:latest lootor_posts     
       
       docker stack deploy -c docker-compose.swarm.yml lootor
       
