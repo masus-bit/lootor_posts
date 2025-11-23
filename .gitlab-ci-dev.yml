@@ -60,9 +60,9 @@ deploy:
         exit 1;
       }
       
-      docker service update --force --image registry.gitlab.com/auc2/backend_services/lootor_posts:latest lootor_posts     
+      docker pull registry.gitlab.com/auc2/backend_services/lootor_posts:latest
       
-      docker stack deploy -c docker-compose.swarm.yml lootor
+      docker service update --force --image registry.gitlab.com/auc2/backend_services/lootor_posts:latest lootor_posts     
       
       
       # 3. Ждем и проверяем
