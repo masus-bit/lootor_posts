@@ -65,11 +65,9 @@ deploy:
       docker service update --force --image registry.gitlab.com/auc2/backend_services/lootor_posts:latest lootor_posts     
       
       
-      # 3. Ждем и проверяем
       echo "Waiting for services to start..."
-      sleep 30
+      sleep 10
       
-      # 4. Проверяем статус
       echo "=== Services status ==="
       docker service ls
       

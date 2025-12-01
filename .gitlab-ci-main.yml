@@ -59,16 +59,28 @@ deploy:
         echo "ERROR: Docker login failed";
         exit 1;
       }
-      docker pull ${CI_REGISTRY_IMAGE}:latest
-      cd ../lootor
       
-      docker-compose -f docker-compose.backend.yml stop posts || true
-      docker-compose -f docker-compose.backend.yml pull posts
-      docker-compose -f docker-compose.backend.yml up -d posts
+      docker pull registry.gitlab.com/auc2/backend_services/lootor_posts:latest
       
-      docker-compose -f docker-compose.backend.yml ps
+      docker service update --force --image registry.gitlab.com/auc2/backend_services/lootor_posts:latest lootor_posts     
+      
+      
+      echo "Waiting for services to start..."
+      sleep 10
+      
+      echo "=== Services status ==="
+      docker service ls
+      
+      echo "=== Backend logs ==="
+      docker service logs lootor_posts --tail 10
+      
+      docker image prune -f
+      docker builder prune --all --force
+      docker image prune -a --force
+      docker volume prune --force    
+      docker container prune -f
       
       exit
       EOF
   only:
-    - main
+    - dev
