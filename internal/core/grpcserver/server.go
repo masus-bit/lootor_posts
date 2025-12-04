@@ -258,6 +258,22 @@ func (s *PostsService) GetPostsByIds(ctx context.Context, req *posts.GetPostsByI
 	return &posts.GetPostsByIdsMapResponse{Data: resultMap}, nil
 }
 
+func (s *PostsService) GetPostsCountByUserLogin(ctx context.Context, req *posts.GetPostsCountByUserLoginRequest) (*posts.GetPostsCountByUserLoginResponse, error) {
+	count, err := s.service.GetPostsCountByUserLogin(req.UserLogin, ctx)
+	if err != nil {
+		return nil, err
+	}
+	return &posts.GetPostsCountByUserLoginResponse{Count: count}, nil
+}
+
+func (s *PostsService) GetReactionsCountByUserLogin(ctx context.Context, req *posts.GetReactionsCountByUserLoginRequest) (*posts.GetReactionsCountByUserLoginResponse, error) {
+	count, err := s.service.GetReactionsCountByUserLogin(req.UserLogin, ctx)
+	if err != nil {
+		return nil, err
+	}
+	return &posts.GetReactionsCountByUserLoginResponse{Count: count}, nil
+}
+
 func convertPostsToProto(postList []models.PostResponse) []*posts.PostItem {
 	var protoPostList []*posts.PostItem
 

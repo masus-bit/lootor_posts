@@ -34,6 +34,26 @@ service PostsService {
   rpc GetPostByTranslit(PostRequestByTranslit) returns (PostResponse);
 
   rpc GetPostsByIds(GetPostsByIdsMapRequest) returns (GetPostsByIdsMapResponse);
+
+  rpc GetPostsCountByUserLogin(GetPostsCountByUserLoginRequest) returns (GetPostsCountByUserLoginResponse);
+
+  rpc GetReactionsCountByUserLogin(GetReactionsCountByUserLoginRequest) returns (GetReactionsCountByUserLoginResponse);
+}
+
+message GetPostsCountByUserLoginRequest {
+  string user_login = 1;
+}
+
+message GetPostsCountByUserLoginResponse {
+  int64 count = 1;
+}
+
+message GetReactionsCountByUserLoginRequest {
+  string user_login = 1;
+}
+
+message GetReactionsCountByUserLoginResponse {
+  int64 count = 1;
 }
 
 message GetPostsByIdsMapRequest {

@@ -238,3 +238,42 @@ func (r *PostsRepository) GetPostsByIdsMap(ids []string) (map[string]models.Post
 	}
 	return result, nil
 }
+
+func (r *PostsRepository) GetPostsCountByUserLogin(userLogin string) (int64, error) {
+	var count int64
+	err := r.db.
+		Model(&models.Posts{}).
+		Where("is_draft = ?", false).
+		Where("author = ?", userLogin).
+		Where("deleted_at IS NULL").
+		Count(&count).Error
+
+	return count, err
+}
+
+func (r *PostsRepository) GetReactionsCountByUserLogin(userLogin string) (int64, error) {
+	var count int64
+	err := r.db.
+		Model(&models.Posts{}).
+		Where("is_draft = ?", false).
+		Where("author = ?", userLogin).
+		Where("deleted_at IS NULL").
+		Count(&count).Error
+
+	return count, err
+}
+
+func (r *PostsRepository) GetTotalPostsReactionsCountByUserLogin(login string) (int64, error) {
+	var totalLikes int64
+
+	query := `
+        SELECT COALESCE(SUM(total_reactions), 0) as total_likes
+        FROM loot_posts.posts
+        WHERE LOWER(author) = LOWER($1) 
+          AND deleted_at IS NULL
+          AND is_draft = false
+    `
+
+	err := r.db.Raw(query, login).Scan(&totalLikes).Error
+	return totalLikes, err
+}

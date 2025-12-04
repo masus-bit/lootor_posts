@@ -283,3 +283,19 @@ func (s *PostsService) GetByIds(ids []string, authUserLogin string, authUserIsPr
 	}
 	return &models.PostsMap{Posts: postsMap}, nil
 }
+
+func (s *PostsService) GetPostsCountByUserLogin(userLogin string, ctx context.Context) (int64, error) {
+	count, err := s.postsRepo.GetPostsCountByUserLogin(userLogin)
+	if err != nil {
+		return 0, err
+	}
+	return count, nil
+}
+
+func (s *PostsService) GetReactionsCountByUserLogin(userLogin string, ctx context.Context) (int64, error) {
+	count, err := s.postsRepo.GetTotalPostsReactionsCountByUserLogin(userLogin)
+	if err != nil {
+		return 0, err
+	}
+	return count, nil
+}
