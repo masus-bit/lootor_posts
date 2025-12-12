@@ -62,7 +62,7 @@ deploy:
       
       docker pull registry.gitlab.com/auc2/backend_services/lootor_posts:latest
       
-      docker service update --force --image registry.gitlab.com/auc2/backend_services/lootor_posts:latest lootor_posts     
+      docker stack deploy --with-registry-auth -c ~/../lootor/docker-compose.swarm.yml lootor        
       
       
       echo "Waiting for services to start..."
