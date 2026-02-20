@@ -3,11 +3,11 @@ package services
 import (
 	"context"
 	"errors"
+	"github.com/google/uuid"
 	"github.com/mitchellh/mapstructure"
 	"lootor_posts/internal/core/models"
 	"lootor_posts/internal/core/repositories"
 	"lootor_posts/pkg/types"
-	"strconv"
 )
 
 type PostsService struct {
@@ -15,7 +15,10 @@ type PostsService struct {
 	reactionsRepo *repositories.PostReactionsRepository
 }
 
-func NewPostsService(postsRepo *repositories.PostsRepository, reactionsRepo *repositories.PostReactionsRepository) *PostsService {
+func NewPostsService(
+	postsRepo *repositories.PostsRepository,
+	reactionsRepo *repositories.PostReactionsRepository,
+) *PostsService {
 	return &PostsService{
 		postsRepo:     postsRepo,
 		reactionsRepo: reactionsRepo,
@@ -44,7 +47,12 @@ func (s *PostsService) CreatePost(dto *models.PostsRequest) (*models.PostDataRes
 	return &models.PostDataResponse{Data: postResponse}, nil
 }
 
-func (s *PostsService) GetPostsByUser(userLogin, limit, offset string, authUserIsPremium bool, authUserLogin string, isDraft bool) (*models.PostsDataResponse, error) {
+func (s *PostsService) GetPostsByUser(
+	userLogin, limit, offset string,
+	authUserIsPremium bool,
+	authUserLogin string,
+	isDraft bool,
+) (*models.PostsDataResponse, error) {
 	records, total, err := s.postsRepo.FindRecordsByUser(userLogin, limit, offset, isDraft)
 	if err != nil {
 		return nil, err
@@ -72,7 +80,11 @@ func (s *PostsService) GetPostsByUser(userLogin, limit, offset string, authUserI
 	return &models.PostsDataResponse{Data: result, Total: total}, nil
 }
 
-func (s *PostsService) GetAllPosts(order, limit, offset string, authUserIsPremium bool, authUserLogin string) (*models.PostsDataResponse, error) {
+func (s *PostsService) GetAllPosts(
+	order, limit, offset string,
+	authUserIsPremium bool,
+	authUserLogin string,
+) (*models.PostsDataResponse, error) {
 	records, total, err := s.postsRepo.FindRecords(order, limit, offset)
 	if err != nil {
 		return nil, err
@@ -104,7 +116,12 @@ func (s *PostsService) GetAllPosts(order, limit, offset string, authUserIsPremiu
 	}, nil
 }
 
-func (s *PostsService) GetPost(ctx context.Context, id uint64, authUserIsPremium bool, authUserLogin string) (*models.PostDataResponse, error) {
+func (s *PostsService) GetPost(
+	ctx context.Context,
+	id string,
+	authUserIsPremium bool,
+	authUserLogin string,
+) (*models.PostDataResponse, error) {
 	post, err := s.postsRepo.FindRecordById(id)
 	if err != nil {
 		return nil, err
@@ -128,7 +145,12 @@ func (s *PostsService) GetPost(ctx context.Context, id uint64, authUserIsPremium
 	return &models.PostDataResponse{Data: postResponse}, nil
 }
 
-func (s *PostsService) GetPostByTranslit(ctx context.Context, translit string, authUserIsPremium bool, authUserLogin string) (*models.PostDataResponse, error) {
+func (s *PostsService) GetPostByTranslit(
+	ctx context.Context,
+	translit string,
+	authUserIsPremium bool,
+	authUserLogin string,
+) (*models.PostDataResponse, error) {
 	post, err := s.postsRepo.FindRecordByTranslit(translit)
 	if err != nil {
 		return nil, err
@@ -153,8 +175,13 @@ func (s *PostsService) GetPostByTranslit(ctx context.Context, translit string, a
 	return &models.PostDataResponse{Data: postResponse}, nil
 }
 
-func (s *PostsService) IncrementReactions(id uint64, reactionType models.ReactionType, ctx context.Context, userLogin string) (string, error) {
-	existsReaction, _ := s.reactionsRepo.FindReaction(strconv.FormatUint(id, 10), userLogin)
+func (s *PostsService) IncrementReactions(
+	id string,
+	reactionType models.ReactionType,
+	ctx context.Context,
+	userLogin string,
+) (string, error) {
+	existsReaction, _ := s.reactionsRepo.FindReaction(id, userLogin)
 	author := ""
 	if existsReaction != nil {
 		_, err := s.DecrementReactions(id, existsReaction.Reaction, ctx, userLogin)
@@ -167,11 +194,14 @@ func (s *PostsService) IncrementReactions(id uint64, reactionType models.Reactio
 	if err != nil {
 		return "", err
 	}
-	_, err = s.reactionsRepo.CreateRecord(&models.PostReactions{
-		PostId:    id,
-		UserLogin: userLogin,
-		Reaction:  reactionType,
-	})
+	uuidVal, _ := uuid.Parse(id)
+	_, err = s.reactionsRepo.CreateRecord(
+		&models.PostReactions{
+			PostId:    uuidVal,
+			UserLogin: userLogin,
+			Reaction:  reactionType,
+		},
+	)
 	if err != nil {
 		return "", err
 	}
@@ -179,30 +209,38 @@ func (s *PostsService) IncrementReactions(id uint64, reactionType models.Reactio
 	return author, nil
 }
 
-func (s *PostsService) DecrementReactions(postId uint64, reactionType models.ReactionType, ctx context.Context, userLogin string) (string, error) {
+func (s *PostsService) DecrementReactions(
+	postId string,
+	reactionType models.ReactionType,
+	ctx context.Context,
+	userLogin string,
+) (string, error) {
 	err := s.postsRepo.DecrementLikes(reactionType, postId)
 	author := ""
 	if err != nil {
 		return "", err
 	}
-	react, _ := s.reactionsRepo.FindReaction(strconv.FormatUint(postId, 10), userLogin)
+	react, _ := s.reactionsRepo.FindReaction(postId, userLogin)
 	if react == nil {
 		return "", errors.New("reaction not found")
 	}
 	author = react.Post.Author
-	err = s.reactionsRepo.DeleteRecord(&models.PostReactions{
-		Id:        react.Id,
-		PostId:    postId,
-		UserLogin: userLogin,
-		Reaction:  reactionType,
-	})
+	uuidVal, _ := uuid.Parse(postId)
+	err = s.reactionsRepo.DeleteRecord(
+		&models.PostReactions{
+			Id:        react.Id,
+			PostId:    uuidVal,
+			UserLogin: userLogin,
+			Reaction:  reactionType,
+		},
+	)
 	if err != nil {
 		return "", err
 	}
 	return author, nil
 }
 
-func (s *PostsService) DeletePost(id uint64, ctx context.Context) (*types.CommonResponse, error) {
+func (s *PostsService) DeletePost(id string, ctx context.Context) (*types.CommonResponse, error) {
 	post, err := s.postsRepo.FindRecordById(id)
 	if err != nil {
 		return nil, err
@@ -211,10 +249,17 @@ func (s *PostsService) DeletePost(id uint64, ctx context.Context) (*types.Common
 	if err != nil {
 		return nil, err
 	}
-	return &types.CommonResponse{Data: types.Resp{Success: true}, ReactCount: int64(post.TotalReactions), Title: post.Title}, nil
+	return &types.CommonResponse{
+		Data:       types.Resp{Success: true},
+		ReactCount: int64(post.TotalReactions),
+		Title:      post.Title,
+	}, nil
 }
 
-func (s *PostsService) UpdatePost(id uint64, dto *models.PostsRequest, ctx context.Context) (*models.PostDataResponse, error) {
+func (s *PostsService) UpdatePost(id string, dto *models.PostsRequest, ctx context.Context) (
+	*models.PostDataResponse,
+	error,
+) {
 	post, err := s.postsRepo.FindRecordById(id)
 	if err != nil {
 		return nil, err
@@ -237,15 +282,15 @@ func (s *PostsService) UpdatePost(id uint64, dto *models.PostsRequest, ctx conte
 	return &models.PostDataResponse{Data: postResponse}, nil
 }
 
-func (s *PostsService) IncrementViews(ids []uint64, ctx context.Context) error {
+func (s *PostsService) IncrementViews(ids []string, ctx context.Context) error {
 	return s.postsRepo.IncrementViews(ids)
 }
 
-func (s *PostsService) IncrementCommentsCount(id uint64, ctx context.Context) error {
+func (s *PostsService) IncrementCommentsCount(id string, ctx context.Context) error {
 	return s.postsRepo.IncrementCommentsCount(id)
 }
 
-func (s *PostsService) DecrementCommentsCount(id uint64, ctx context.Context) error {
+func (s *PostsService) DecrementCommentsCount(id string, ctx context.Context) error {
 	return s.postsRepo.DecrementCommentsCount(id)
 }
 
@@ -257,7 +302,12 @@ func (s *PostsService) GetCount(userLogin string, ctx context.Context) (int64, e
 	return count, nil
 }
 
-func (s *PostsService) GetByIds(ids []string, authUserLogin string, authUserIsPremium bool, ctx context.Context) (*models.PostsMap, error) {
+func (s *PostsService) GetByIds(
+	ids []string,
+	authUserLogin string,
+	authUserIsPremium bool,
+	ctx context.Context,
+) (*models.PostsMap, error) {
 	posts, err := s.postsRepo.GetPostsByIdsMap(ids)
 	postsMap := make(map[string]models.PostResponse)
 	for key, record := range posts {

@@ -27,7 +27,7 @@ type PostReactions struct {
 	DeletedAt gorm.DeletedAt `json:"deletedAt" gorm:"index"`
 
 	Id        uuid.UUID    `gorm:"type:uuid;primaryKey;default:gen_random_uuid()" json:"id"`
-	PostId    uint64       `gorm:"not null;uniqueIndex:idx_user_post" json:"postId"`
+	PostId    uuid.UUID    `gorm:"not null;uniqueIndex:idx_user_post" json:"postId"`
 	UserLogin string       `gorm:"not null;uniqueIndex:idx_user_post" json:"userLogin"`
 	Reaction  ReactionType `json:"reaction"`
 

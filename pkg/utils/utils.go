@@ -35,7 +35,7 @@ func GormJSONToProtoStruct(jsonData datatypes.JSON) (*structpb.Struct, error) {
 
 func FillPostItem(post *models.PostResponse, content *structpb.Struct, protoReacts []*posts.React) *posts.PostItem {
 	return &posts.PostItem{
-		Id:             post.Id,
+		Id:             post.Id.String(),
 		Date:           post.Date,
 		Content:        content,
 		CreatedAt:      post.CreatedAt.Format(time.RFC3339),
@@ -59,5 +59,6 @@ func FillPostItem(post *models.PostResponse, content *structpb.Struct, protoReac
 		CommentsCount:  int64(post.CommentsCount),
 		Title:          post.Title,
 		Translit:       post.Translit,
+		NumberId:       post.NumberID,
 	}
 }

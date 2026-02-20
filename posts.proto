@@ -77,11 +77,11 @@ message CountResponse {
 message ReactRequest {
   string reaction = 1;
   string user_login = 2;
-  uint64 post_id = 3;
+  string post_id = 3;
 }
 
 message CommentsCountRequest {
-  uint64 post_id = 1;
+  string post_id = 1;
 }
 
 message CommentsCountResponse {
@@ -89,7 +89,7 @@ message CommentsCountResponse {
 }
 
 message ViewsRequest {
-  repeated uint64 post_ids = 1;
+  repeated string post_ids = 1;
 }
 
 message ViewsResponse {
@@ -99,7 +99,7 @@ message ViewsResponse {
 message ReactDecrementRequest {
   string reaction = 1;
   string user_login = 2;
-  uint64 post_id = 3;
+  string post_id = 3;
 }
 
 message ReactResponse {
@@ -116,7 +116,7 @@ message CreatePostRequest {
 }
 
 message UpdatePostRequest {
-  uint64 id = 1;
+  string id = 1;
   google.protobuf.Struct content = 2;
   bool is_draft = 3;
   string title = 4;
@@ -124,7 +124,7 @@ message UpdatePostRequest {
 }
 
 message DeletePostRequest {
-  uint64 id = 1;
+  string id = 1;
 }
 
 message DeletePostResponse {
@@ -134,7 +134,7 @@ message DeletePostResponse {
 }
 
 message PostRequest {
-  uint64 id = 1;
+  string id = 1;
   bool is_premium = 2;
   string auth_user_login = 3;
 }
@@ -173,14 +173,14 @@ message GetAllPostsResponse {
 
 message React {
   string user_login = 1;
-  uint64 post_id = 2;
+  string post_id = 2;
   string id = 3;
   string created_at = 4;
   string reaction = 5;
 }
 
 message PostItem {
-  uint64 id = 1;
+  string id = 1;
   string date = 2;
   google.protobuf.Struct content = 3;
   string created_at = 4;
@@ -205,4 +205,5 @@ message PostItem {
   int64 comments_count = 23;
   string title = 24;
   string translit = 25;
+  uint64 number_id = 26;
 }

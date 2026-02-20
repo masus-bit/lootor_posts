@@ -36,7 +36,10 @@ func (r *PostsRepository) FindRecordsByUser(login, limit, offset string, isDraft
 	if err != nil {
 		return nil, 0, err
 	}
-	err = r.db.Model(&models.Posts{}).Unscoped().Where("author = ?", login).Where("is_draft = ?", isDraft).Where("deleted_at IS NULL").Count(&totalCount).Error
+	err = r.db.Model(&models.Posts{}).Unscoped().Where("author = ?", login).Where(
+		"is_draft = ?",
+		isDraft,
+	).Where("deleted_at IS NULL").Count(&totalCount).Error
 	if err != nil {
 		return nil, 0, err
 	}
@@ -53,7 +56,7 @@ func (r *PostsRepository) DeleteRecord(post *models.Posts) error {
 	return nil
 }
 
-func (r *PostsRepository) FindRecordById(id uint64) (*models.Posts, error) {
+func (r *PostsRepository) FindRecordById(id string) (*models.Posts, error) {
 	var post models.Posts
 
 	query := r.db.Where("id = ?", id).Where("deleted_at IS NULL")
@@ -79,7 +82,7 @@ func (r *PostsRepository) FindRecordByTranslit(translit string) (*models.Posts, 
 	return &post, nil
 }
 
-func (r *PostsRepository) IncrementReactions(reactionType models.ReactionType, id uint64) error {
+func (r *PostsRepository) IncrementReactions(reactionType models.ReactionType, id string) error {
 
 	err := r.db.Model(&models.Posts{}).Where("id = ?", id).
 		Update(string(reactionType+"_count"), gorm.Expr("COALESCE("+string(reactionType)+"_count, 0) + ?", 1)).Error
@@ -91,10 +94,13 @@ func (r *PostsRepository) IncrementReactions(reactionType models.ReactionType, i
 	return nil
 }
 
-func (r *PostsRepository) DecrementLikes(reactionType models.ReactionType, id uint64) error {
+func (r *PostsRepository) DecrementLikes(reactionType models.ReactionType, id string) error {
 
 	err := r.db.Model(&models.Posts{}).Where("id = ?", id).
-		Update(string(reactionType+"_count"), gorm.Expr("GREATEST(COALESCE("+string(reactionType)+"_count, 0) - ?, 0)", 1)).Error
+		Update(
+			string(reactionType+"_count"),
+			gorm.Expr("GREATEST(COALESCE("+string(reactionType)+"_count, 0) - ?, 0)", 1),
+		).Error
 
 	if err != nil {
 		return err
@@ -125,7 +131,10 @@ func (r *PostsRepository) FindRecords(order, limit, offset string) ([]models.Pos
 	if err != nil {
 		return nil, 0, err
 	}
-	err = r.db.Model(&models.Posts{}).Unscoped().Where("deleted_at IS NULL").Where("is_draft = ?", false).Count(&totalCount).Error
+	err = r.db.Model(&models.Posts{}).Unscoped().Where("deleted_at IS NULL").Where(
+		"is_draft = ?",
+		false,
+	).Count(&totalCount).Error
 	if err != nil {
 		return nil, 0, err
 	}
@@ -134,12 +143,14 @@ func (r *PostsRepository) FindRecords(order, limit, offset string) ([]models.Pos
 }
 
 func (r *PostsRepository) UpdateFull(existsPost *models.Posts) (*models.Posts, error) {
-	err := r.db.Transaction(func(tx *gorm.DB) error {
-		if err := tx.Model(existsPost).Select("*").Updates(existsPost).Error; err != nil {
-			return err
-		}
-		return nil
-	})
+	err := r.db.Transaction(
+		func(tx *gorm.DB) error {
+			if err := tx.Model(existsPost).Select("*").Updates(existsPost).Error; err != nil {
+				return err
+			}
+			return nil
+		},
+	)
 
 	if err != nil {
 		return nil, err
@@ -156,7 +167,7 @@ func (r *PostsRepository) UpdateFull(existsPost *models.Posts) (*models.Posts, e
 	return &result, nil
 }
 
-func (r *PostsRepository) IncrementViews(ids []uint64) error {
+func (r *PostsRepository) IncrementViews(ids []string) error {
 	err := r.db.Model(&models.Posts{}).Where("id IN (?)", ids).
 		Update("views", gorm.Expr("COALESCE(views, 0) + ?", 1)).Error
 
@@ -167,7 +178,7 @@ func (r *PostsRepository) IncrementViews(ids []uint64) error {
 	return nil
 }
 
-func (r *PostsRepository) IncrementCommentsCount(id uint64) error {
+func (r *PostsRepository) IncrementCommentsCount(id string) error {
 	err := r.db.Model(&models.Posts{}).Where("id = ?", id).
 		Update("comments_count", gorm.Expr("COALESCE(comments_count, 0) + ?", 1)).Error
 
@@ -178,7 +189,7 @@ func (r *PostsRepository) IncrementCommentsCount(id uint64) error {
 	return nil
 }
 
-func (r *PostsRepository) DecrementCommentsCount(id uint64) error {
+func (r *PostsRepository) DecrementCommentsCount(id string) error {
 	err := r.db.Model(&models.Posts{}).Where("id = ?", id).
 		Update("comments_count", gorm.Expr("GREATEST(COALESCE(comments_count, 0) - ?, 0)", 1)).Error
 

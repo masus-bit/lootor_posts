@@ -68,7 +68,7 @@ func (s *PostsService) CreatePost(ctx context.Context, req *posts.CreatePostRequ
 
 	return &posts.PostResponse{
 		Data: &posts.PostItem{
-			Id:        uint64(item.Data.Id),
+			Id:        item.Data.Id.String(),
 			Date:      item.Data.Date,
 			Content:   content,
 			CreatedAt: formatTime(item.Data.CreatedAt),
@@ -81,8 +81,18 @@ func (s *PostsService) CreatePost(ctx context.Context, req *posts.CreatePostRequ
 	}, nil
 }
 
-func (s *PostsService) GetPostsByUser(ctx context.Context, req *posts.GetPostsByUserRequest) (*posts.GetAllPostsResponse, error) {
-	allPosts, err := s.service.GetPostsByUser(req.GetLogin(), req.GetLimit(), req.GetOffset(), req.GetIsPremium(), req.GetAuthUserLogin(), req.GetIsDraft())
+func (s *PostsService) GetPostsByUser(
+	ctx context.Context,
+	req *posts.GetPostsByUserRequest,
+) (*posts.GetAllPostsResponse, error) {
+	allPosts, err := s.service.GetPostsByUser(
+		req.GetLogin(),
+		req.GetLimit(),
+		req.GetOffset(),
+		req.GetIsPremium(),
+		req.GetAuthUserLogin(),
+		req.GetIsDraft(),
+	)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
@@ -94,7 +104,10 @@ func (s *PostsService) GetPostsByUser(ctx context.Context, req *posts.GetPostsBy
 	}, nil
 }
 
-func (s *PostsService) DeletePost(ctx context.Context, req *posts.DeletePostRequest) (*posts.DeletePostResponse, error) {
+func (s *PostsService) DeletePost(ctx context.Context, req *posts.DeletePostRequest) (
+	*posts.DeletePostResponse,
+	error,
+) {
 	result, err := s.service.DeletePost(req.GetId(), ctx)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
@@ -107,8 +120,17 @@ func (s *PostsService) DeletePost(ctx context.Context, req *posts.DeletePostRequ
 	}, nil
 }
 
-func (s *PostsService) GetAllPosts(ctx context.Context, req *posts.GetAllPostsRequest) (*posts.GetAllPostsResponse, error) {
-	allPosts, err := s.service.GetAllPosts(req.GetOrder(), req.GetLimit(), req.GetOffset(), req.GetIsPremium(), req.GetAuthUserLogin())
+func (s *PostsService) GetAllPosts(ctx context.Context, req *posts.GetAllPostsRequest) (
+	*posts.GetAllPostsResponse,
+	error,
+) {
+	allPosts, err := s.service.GetAllPosts(
+		req.GetOrder(),
+		req.GetLimit(),
+		req.GetOffset(),
+		req.GetIsPremium(),
+		req.GetAuthUserLogin(),
+	)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
@@ -132,7 +154,10 @@ func (s *PostsService) GetPost(ctx context.Context, req *posts.PostRequest) (*po
 	}, nil
 }
 
-func (s *PostsService) GetPostByTranslit(ctx context.Context, req *posts.PostRequestByTranslit) (*posts.PostResponse, error) {
+func (s *PostsService) GetPostByTranslit(ctx context.Context, req *posts.PostRequestByTranslit) (
+	*posts.PostResponse,
+	error,
+) {
 	post, err := s.service.GetPostByTranslit(ctx, req.GetTranslit(), req.GetIsPremium(), req.GetAuthUserLogin())
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
@@ -145,7 +170,12 @@ func (s *PostsService) GetPostByTranslit(ctx context.Context, req *posts.PostReq
 }
 
 func (s *PostsService) IncrementReaction(ctx context.Context, req *posts.ReactRequest) (*posts.ReactResponse, error) {
-	author, err := s.service.IncrementReactions(req.GetPostId(), models.ReactionType(req.GetReaction()), ctx, req.GetUserLogin())
+	author, err := s.service.IncrementReactions(
+		req.GetPostId(),
+		models.ReactionType(req.GetReaction()),
+		ctx,
+		req.GetUserLogin(),
+	)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
@@ -156,8 +186,16 @@ func (s *PostsService) IncrementReaction(ctx context.Context, req *posts.ReactRe
 	}, nil
 }
 
-func (s *PostsService) DecrementReaction(ctx context.Context, req *posts.ReactDecrementRequest) (*posts.ReactResponse, error) {
-	author, err := s.service.DecrementReactions(req.GetPostId(), models.ReactionType(req.GetReaction()), ctx, req.GetUserLogin())
+func (s *PostsService) DecrementReaction(ctx context.Context, req *posts.ReactDecrementRequest) (
+	*posts.ReactResponse,
+	error,
+) {
+	author, err := s.service.DecrementReactions(
+		req.GetPostId(),
+		models.ReactionType(req.GetReaction()),
+		ctx,
+		req.GetUserLogin(),
+	)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
@@ -173,19 +211,21 @@ func (s *PostsService) UpdatePost(ctx context.Context, req *posts.UpdatePostRequ
 		return nil, status.Error(codes.InvalidArgument, "request cannot be nil")
 	}
 
-	if req.GetId() == 0 {
+	if req.GetId() == "" {
 		return nil, status.Error(codes.InvalidArgument, "id is required")
 	}
 
 	if req.GetContent() == nil {
 		return nil, status.Error(codes.InvalidArgument, "content is required")
 	}
-	post, err := s.service.UpdatePost(req.GetId(), &models.PostsRequest{
-		Content:  utils.NormalizeContent(req.GetContent()),
-		IsDraft:  req.GetIsDraft(),
-		Title:    req.GetTitle(),
-		Translit: req.GetTranslit(),
-	}, ctx)
+	post, err := s.service.UpdatePost(
+		req.GetId(), &models.PostsRequest{
+			Content:  utils.NormalizeContent(req.GetContent()),
+			IsDraft:  req.GetIsDraft(),
+			Title:    req.GetTitle(),
+			Translit: req.GetTranslit(),
+		}, ctx,
+	)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
@@ -212,7 +252,10 @@ func (s *PostsService) IncrementViews(ctx context.Context, req *posts.ViewsReque
 	}, nil
 }
 
-func (s *PostsService) IncrementCommentsCount(ctx context.Context, req *posts.CommentsCountRequest) (*posts.CommentsCountResponse, error) {
+func (s *PostsService) IncrementCommentsCount(
+	ctx context.Context,
+	req *posts.CommentsCountRequest,
+) (*posts.CommentsCountResponse, error) {
 	err := s.service.IncrementCommentsCount(req.GetPostId(), ctx)
 	if err != nil {
 		return nil, err
@@ -223,7 +266,10 @@ func (s *PostsService) IncrementCommentsCount(ctx context.Context, req *posts.Co
 	}, nil
 }
 
-func (s *PostsService) DecrementCommentsCount(ctx context.Context, req *posts.CommentsCountRequest) (*posts.CommentsCountResponse, error) {
+func (s *PostsService) DecrementCommentsCount(
+	ctx context.Context,
+	req *posts.CommentsCountRequest,
+) (*posts.CommentsCountResponse, error) {
 	err := s.service.DecrementCommentsCount(req.GetPostId(), ctx)
 	if err != nil {
 		return nil, err
@@ -242,7 +288,10 @@ func (s *PostsService) GetCountByUser(ctx context.Context, req *posts.CountReque
 	return &posts.CountResponse{Count: count}, nil
 }
 
-func (s *PostsService) GetPostsByIds(ctx context.Context, req *posts.GetPostsByIdsMapRequest) (*posts.GetPostsByIdsMapResponse, error) {
+func (s *PostsService) GetPostsByIds(
+	ctx context.Context,
+	req *posts.GetPostsByIdsMapRequest,
+) (*posts.GetPostsByIdsMapResponse, error) {
 	postList, err := s.service.GetByIds(req.PostIds, req.AuthUserLogin, req.IsPremium, ctx)
 	if err != nil {
 		return nil, err
@@ -258,7 +307,10 @@ func (s *PostsService) GetPostsByIds(ctx context.Context, req *posts.GetPostsByI
 	return &posts.GetPostsByIdsMapResponse{Data: resultMap}, nil
 }
 
-func (s *PostsService) GetPostsCountByUserLogin(ctx context.Context, req *posts.GetPostsCountByUserLoginRequest) (*posts.GetPostsCountByUserLoginResponse, error) {
+func (s *PostsService) GetPostsCountByUserLogin(
+	ctx context.Context,
+	req *posts.GetPostsCountByUserLoginRequest,
+) (*posts.GetPostsCountByUserLoginResponse, error) {
 	count, err := s.service.GetPostsCountByUserLogin(req.UserLogin, ctx)
 	if err != nil {
 		return nil, err
@@ -266,7 +318,10 @@ func (s *PostsService) GetPostsCountByUserLogin(ctx context.Context, req *posts.
 	return &posts.GetPostsCountByUserLoginResponse{Count: count}, nil
 }
 
-func (s *PostsService) GetReactionsCountByUserLogin(ctx context.Context, req *posts.GetReactionsCountByUserLoginRequest) (*posts.GetReactionsCountByUserLoginResponse, error) {
+func (s *PostsService) GetReactionsCountByUserLogin(
+	ctx context.Context,
+	req *posts.GetReactionsCountByUserLoginRequest,
+) (*posts.GetReactionsCountByUserLoginResponse, error) {
 	count, err := s.service.GetReactionsCountByUserLogin(req.UserLogin, ctx)
 	if err != nil {
 		return nil, err
@@ -288,13 +343,15 @@ func convertPostsToProto(postList []models.PostResponse) []*posts.PostItem {
 func convertReactionsToProto(reactions []models.PostReactions) []*posts.React {
 	var protoReactions []*posts.React
 	for _, reaction := range reactions {
-		protoReactions = append(protoReactions, &posts.React{
-			UserLogin: reaction.UserLogin,
-			PostId:    reaction.PostId,
-			Id:        reaction.Id.String(),
-			CreatedAt: reaction.CreatedAt.Format(time.RFC3339),
-			Reaction:  string(reaction.Reaction),
-		})
+		protoReactions = append(
+			protoReactions, &posts.React{
+				UserLogin: reaction.UserLogin,
+				PostId:    reaction.PostId.String(),
+				Id:        reaction.Id.String(),
+				CreatedAt: reaction.CreatedAt.Format(time.RFC3339),
+				Reaction:  string(reaction.Reaction),
+			},
+		)
 	}
 	return protoReactions
 }
