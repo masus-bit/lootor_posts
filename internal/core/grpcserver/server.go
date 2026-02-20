@@ -49,8 +49,8 @@ func (s *PostsService) CreatePost(ctx context.Context, req *posts.CreatePostRequ
 
 	item, err := s.service.CreatePost(dto)
 	if err != nil {
-		log.Printf("Failed to create comment: %v", err)
-		return nil, status.Error(codes.Internal, "failed to create comment")
+		log.Printf("Failed to create post: %v", err)
+		return nil, status.Error(codes.Internal, "failed to create post")
 	}
 
 	content, err := utils.GormJSONToProtoStruct(item.Data.Content)
@@ -77,6 +77,7 @@ func (s *PostsService) CreatePost(ctx context.Context, req *posts.CreatePostRequ
 			IsDraft:   item.Data.IsDraft,
 			Title:     item.Data.Title,
 			Translit:  item.Data.Translit,
+			NumberId:  item.Data.NumberID,
 		},
 	}, nil
 }

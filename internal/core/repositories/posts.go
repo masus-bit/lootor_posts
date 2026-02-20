@@ -215,25 +215,16 @@ func (r *PostsRepository) GetCount(userLogin string) (int64, error) {
 func (r *PostsRepository) GetPostsByIdsMap(ids []string) (map[string]models.Posts, error) {
 	var posts []models.Posts
 
-	var numericIDs []int64
 	var stringIDs []string
 
 	for _, id := range ids {
-		if num, err := strconv.ParseInt(id, 10, 64); err == nil {
-			numericIDs = append(numericIDs, num)
-		} else {
-			stringIDs = append(stringIDs, id)
-		}
+		stringIDs = append(stringIDs, id)
 	}
 
 	query := r.db.Where("deleted_at IS NULL")
 
-	if len(numericIDs) > 0 && len(stringIDs) > 0 {
-		query = query.Where("(id IN (?) OR translit IN (?))", numericIDs, stringIDs)
-	} else if len(numericIDs) > 0 {
-		query = query.Where("id IN (?)", numericIDs)
-	} else if len(stringIDs) > 0 {
-		query = query.Where("translit IN (?)", stringIDs)
+	if len(stringIDs) > 0 {
+		query = query.Where("id IN (?)", stringIDs)
 	} else {
 		return make(map[string]models.Posts), nil
 	}
@@ -245,7 +236,7 @@ func (r *PostsRepository) GetPostsByIdsMap(ids []string) (map[string]models.Post
 
 	result := make(map[string]models.Posts)
 	for _, post := range posts {
-		result[post.Translit] = post
+		result[post.Id.String()] = post
 	}
 	return result, nil
 }
