@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 	"lootor_posts/internal/core/models"
 	"strconv"
@@ -214,22 +215,23 @@ func (r *PostsRepository) GetCount(userLogin string) (int64, error) {
 
 func (r *PostsRepository) GetPostsByIdsMap(ids []string) (map[string]models.Posts, error) {
 	var posts []models.Posts
-
-	var stringIDs []string
+	var validIDs []string
 
 	for _, id := range ids {
-		stringIDs = append(stringIDs, id)
+		if _, err := uuid.Parse(id); err == nil {
+			validIDs = append(validIDs, id)
+		}
 	}
 
-	query := r.db.Where("deleted_at IS NULL")
-
-	if len(stringIDs) > 0 {
-		query = query.Where("id IN (?)", stringIDs)
-	} else {
+	if len(validIDs) == 0 {
 		return make(map[string]models.Posts), nil
 	}
 
-	err := query.Preload("Reactions").Find(&posts).Error
+	query := r.db.Where("deleted_at IS NULL").
+		Where("id IN (?)", validIDs).
+		Preload("Reactions")
+
+	err := query.Find(&posts).Error
 	if err != nil {
 		return nil, err
 	}
