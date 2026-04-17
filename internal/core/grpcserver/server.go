@@ -330,6 +330,17 @@ func (s *PostsService) GetReactionsCountByUserLogin(
 	return &posts.GetReactionsCountByUserLoginResponse{Count: count}, nil
 }
 
+func (s *PostsService) GetPostsCountsByUserLogins(
+	ctx context.Context,
+	req *posts.GetPostsCountsByUserLoginsRequest,
+) (*posts.GetPostsCountsByUserLoginsResponse, error) {
+	counts, err := s.service.GetPostsCountsByUserLogins(req.GetUserLogins(), ctx)
+	if err != nil {
+		return nil, err
+	}
+	return &posts.GetPostsCountsByUserLoginsResponse{Data: counts}, nil
+}
+
 func convertPostsToProto(postList []models.PostResponse) []*posts.PostItem {
 	var protoPostList []*posts.PostItem
 

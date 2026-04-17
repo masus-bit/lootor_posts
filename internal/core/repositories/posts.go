@@ -281,3 +281,35 @@ func (r *PostsRepository) GetTotalPostsReactionsCountByUserLogin(login string) (
 	err := r.db.Raw(query, login).Scan(&totalLikes).Error
 	return totalLikes, err
 }
+
+func (r *PostsRepository) GetCountsByLogins(logins []string) (map[string]int64, error) {
+	var results []struct {
+		Login string
+		Count int64
+	}
+
+	err := r.db.Table("posts").
+		Select("author, COUNT(*) as count").
+		Where("is_draft = ?", false).
+		Where("author IN (?)", logins).
+		Where("deleted_at IS NULL").
+		Group("author").
+		Scan(&results).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	counts := make(map[string]int64)
+	for _, result := range results {
+		counts[result.Login] = result.Count
+	}
+
+	for _, id := range logins {
+		if _, exists := counts[id]; !exists {
+			counts[id] = 0
+		}
+	}
+
+	return counts, nil
+}

@@ -349,3 +349,11 @@ func (s *PostsService) GetReactionsCountByUserLogin(userLogin string, ctx contex
 	}
 	return count, nil
 }
+
+func (s *PostsService) GetPostsCountsByUserLogins(logins []string, ctx context.Context) (map[string]int64, error) {
+	counts, err := s.postsRepo.GetCountsByLogins(logins)
+	if err != nil {
+		return nil, err
+	}
+	return counts, nil
+}
