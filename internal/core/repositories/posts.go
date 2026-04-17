@@ -284,8 +284,8 @@ func (r *PostsRepository) GetTotalPostsReactionsCountByUserLogin(login string) (
 
 func (r *PostsRepository) GetCountsByLogins(logins []string) (map[string]int64, error) {
 	var results []struct {
-		Login string
-		Count int64
+		Author string
+		Count  int64
 	}
 
 	err := r.db.Table("posts").
@@ -302,7 +302,7 @@ func (r *PostsRepository) GetCountsByLogins(logins []string) (map[string]int64, 
 
 	counts := make(map[string]int64)
 	for _, result := range results {
-		counts[result.Login] = result.Count
+		counts[result.Author] = result.Count
 	}
 
 	for _, id := range logins {
