@@ -84,9 +84,19 @@ func (r *PostsRepository) FindRecordByTranslit(translit string) (*models.Posts, 
 }
 
 func (r *PostsRepository) IncrementReactions(reactionType models.ReactionType, id string) error {
+	var formattedReactionType string
+
+	if reactionType == "pokerFace" {
+		formattedReactionType = "poker_face_count"
+	} else {
+		formattedReactionType = string(reactionType)
+	}
 
 	err := r.db.Model(&models.Posts{}).Where("id = ?", id).
-		Update(string(reactionType+"_count"), gorm.Expr("COALESCE("+string(reactionType)+"_count, 0) + ?", 1)).Error
+		Update(
+			formattedReactionType+"_count",
+			gorm.Expr("COALESCE("+string(formattedReactionType)+"_count, 0) + ?", 1),
+		).Error
 
 	if err != nil {
 		return err
@@ -96,11 +106,18 @@ func (r *PostsRepository) IncrementReactions(reactionType models.ReactionType, i
 }
 
 func (r *PostsRepository) DecrementLikes(reactionType models.ReactionType, id string) error {
+	var formattedReactionType string
+
+	if reactionType == "pokerFace" {
+		formattedReactionType = "poker_face_count"
+	} else {
+		formattedReactionType = string(reactionType)
+	}
 
 	err := r.db.Model(&models.Posts{}).Where("id = ?", id).
 		Update(
-			string(reactionType+"_count"),
-			gorm.Expr("GREATEST(COALESCE("+string(reactionType)+"_count, 0) - ?, 0)", 1),
+			formattedReactionType+"_count",
+			gorm.Expr("GREATEST(COALESCE("+string(formattedReactionType)+"_count, 0) - ?, 0)", 1),
 		).Error
 
 	if err != nil {
